@@ -12,7 +12,6 @@ import {
 } from "@/features/activity/activityApi";
 
 import ActivityList from "./components/ActivityList";
-import ActivityModal from "./components/ActivityModal";
 
 const initialFormData = {
   title: "",
@@ -173,15 +172,6 @@ export default function ActivityManagementPage() {
           setPage={setPage}
         />
 
-        <ActivityModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          mode={modalMode}
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={handleSubmit}
-          isSaving={creating || updating}
-        />
       </div>
     </div>
   );
