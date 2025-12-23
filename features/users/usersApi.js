@@ -3,7 +3,7 @@ import { baseApi } from "@/services/baseApi";
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query({
-      query: () => "/users",
+      query: ({name, email, role}) => `/user?name=${name}&email=${email}&role=${role}`,
       providesTags: ["User"],
     }),
   }),

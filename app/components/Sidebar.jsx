@@ -18,8 +18,8 @@ import clsx from "clsx";
 const menuItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/activities", label: "Activity", icon: BarChart3 },
+  { href: "/admin/bookings", label: "Bookings", icon: Package },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];
