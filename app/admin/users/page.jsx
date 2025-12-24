@@ -11,7 +11,6 @@ const UserManagementPage = () => {
   // Debounced values to reduce API calls
   const [debouncedName, setDebouncedName] = useState("");
   const [debouncedEmail, setDebouncedEmail] = useState("");
-  const [debouncedRole, setDebouncedRole] = useState("");
 
   // Debounce name and email inputs
   useEffect(() => {
@@ -26,20 +25,23 @@ const UserManagementPage = () => {
     return () => handler.cancel();
   }, [email]);
 
-  useEffect(() => {
-    setDebouncedRole(role);
-  }, [role]);
+  // useEffect(() => {
+  //   setDebouncedRole(role);
+  // }, [role]);
 
-  const {
-    data: usersResponse,
-    isLoading,
-    isFetching,
-    error,
-  } = useGetUsersQuery({
-    name: debouncedName || "",
-    email: debouncedEmail || "",
-    role: debouncedRole || "",
-  });
+const queryParams = {
+   name: debouncedName || "",
+   email: debouncedEmail || "",
+   role: role || undefined, 
+ };
+
+ const {
+   data: usersResponse,
+   isLoading,
+   isFetching,
+   error,
+ } = useGetUsersQuery(queryParams);
+
 
   const users = usersResponse?.users || []; // Adjust if your API returns differently
 console.log("Fetched users:", users);
@@ -108,9 +110,8 @@ console.log("Fetched users:", users);
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value="">All roles</option>
-                <option value="admin">Admin</option>
                 <option value="user">User</option>
+                <option value="admin">Admin</option>
                 <option value="moderator">Moderator</option>
                 {/* Add more roles as needed */}
               </select>

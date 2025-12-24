@@ -16,7 +16,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
 const menuItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/activities", label: "Activity", icon: BarChart3 },
   { href: "/admin/bookings", label: "Bookings", icon: Package },
