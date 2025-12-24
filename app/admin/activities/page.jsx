@@ -10,6 +10,8 @@ import {
   useDeleteActivityMutation,
   useToggleActivityStatusMutation,
 } from "@/features/activity/activityApi";
+import { useRouter } from "next/navigation";
+
 
 import ActivityList from "./components/ActivityList";
 
@@ -55,6 +57,7 @@ const initialFormData = {
 };
 
 export default function ActivityManagementPage() {
+  const router = useRouter();
   const [page, setPage] = useState(1);
   const limit = 10;
   const [statusFilter, setStatusFilter] = useState("all");
@@ -88,11 +91,9 @@ export default function ActivityManagementPage() {
     }
   }, [activityData, modalMode]);
 
-  const openCreate = () => {
-    setModalMode("create");
-    setFormData(initialFormData);
-    setIsModalOpen(true);
-  };
+const openCreate = () => {
+  router.push("/admin/activities/create"); 
+};
 
   const openEdit = (id) => {
     setModalMode("edit");
