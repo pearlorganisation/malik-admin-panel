@@ -32,7 +32,7 @@ const UserManagementPage = () => {
 const queryParams = {
    name: debouncedName || "",
    email: debouncedEmail || "",
-   role: role || undefined, 
+    role,  
  };
 
  const {
