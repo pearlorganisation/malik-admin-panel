@@ -1,5 +1,10 @@
 // app/admin/activities/components/BasicInfoSection.jsx
-export default function BasicInfoSection({ formData, setFormData }) {
+export default function BasicInfoSection({
+  formData,
+  setFormData,
+  categories,
+}) {
+  console.log("Categories in BasicInfoSection:", categories);
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
@@ -23,6 +28,22 @@ export default function BasicInfoSection({ formData, setFormData }) {
           }
           className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 resize-none"
         />
+        {/* categories select */}
+        <select
+          value={formData.category}
+          onChange={(e) =>
+            setFormData({ ...formData, category: e.target.value })
+          }
+          className="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:border-indigo-500"
+        >
+          <option value="">Select Category</option>
+          {categories.map((category) => (
+            <option key={category._id} value={category.name}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+
         <textarea
           placeholder="Full Description (detailed)"
           rows={10}

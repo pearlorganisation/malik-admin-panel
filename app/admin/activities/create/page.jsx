@@ -1,7 +1,7 @@
 // app/admin/activities/create/page.jsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateActivityMutation } from "@/features/activity/activityApi";
 
@@ -14,11 +14,15 @@ import AvailabilitySection from "../components/AvailabilitySection";
 import ItinerarySection from "../components/ItinerarySection";
 import InclusionsSection from "../components/InclusionsSection";
 import RestrictionsSection from "../components/RestrictionsSection";
+import { useGetCategoriesQuery } from "@/features/category/categoryApi";
 
 const initialFormData = {
   title: "",
   shortDescription: "",
   fullDescription: "",
+  category: "",
+  location: "",
+  tags: [],
   images: [], // Will be populated by ImagesSection with { file: File | null }
   video: { file: null },
   duration: { label: "", hours: null },
@@ -72,12 +76,23 @@ export default function CreateActivityPage() {
   const [formData, setFormData] = useState(initialFormData);
   const [activeTab, setActiveTab] = useState("basic");
   const [createActivity, { isLoading: isSaving }] = useCreateActivityMutation();
+  const { data: categoriesData } = useGetCategoriesQuery({});
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    // Fetch categories from backend or define them statically
+      console.log("Fetched categories data:", categoriesData?.data);
+    if (categoriesData && categoriesData?.data) {
+      setCategories(categoriesData.data);
+    }
+  }, [categoriesData]);
 
   const buildFormDataPayload = () => {
     const fd = new FormData();
 
     // Append all non-file fields as JSON strings or directly
     fd.append("title", formData.title || "");
+    fd.append("category", formData.category || "");
     fd.append("shortDescription", formData.shortDescription || "");
     fd.append("fullDescription", formData.fullDescription || "");
     fd.append("duration", JSON.stringify(formData.duration));
@@ -153,7 +168,7 @@ export default function CreateActivityPage() {
     switch (activeTab) {
       case "basic":
         return (
-          <BasicInfoSection formData={formData} setFormData={setFormData} />
+          <BasicInfoSection categories={categories} formData={formData} setFormData={setFormData} />
         );
       case "images":
         return <ImagesSection formData={formData} setFormData={setFormData} />;
@@ -185,119 +200,117 @@ export default function CreateActivityPage() {
   };
 
   return (
-   <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
-  {/* Header */}
-  {/* Header */}
-<header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="h-20 flex items-center justify-between">
-      
-      {/* Left */}
-      <div className="flex items-start gap-4">
-        <button
-          onClick={handleCancel}
-          className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm hover:bg-gray-100 transition"
-        >
-          <svg
-            className="w-5 h-5 text-gray-700"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </button>
-
-        <div>
-          {/* Breadcrumb */}
-          <p className="text-xs text-gray-500">
-            Activities <span className="mx-1">/</span> Create
-          </p>
-
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-            Create New Activity
-          </h1>
-
-          <p className="text-sm text-gray-500 mt-0.5 max-w-xl">
-            Fill in the details below to create and publish a new experience
-          </p>
-        </div>
-      </div>
-
-      {/* Right */}
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-4 py-1.5 text-sm font-medium text-yellow-700 border border-yellow-200">
-          <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
-          Draft
-        </span>
-      </div>
-    </div>
-  </div>
-</header>
-
-
-  {/* Tabs */}
-  <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <ActivityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-    </div>
-  </div>
-
-  {/* Form */}
-  <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <div className="bg-white rounded-2xl shadow-lg ring-1 ring-black/5 overflow-hidden">
-        <div className="p-6 sm:p-10 lg:p-12">{renderTabContent()}</div>
-
-        {/* Footer Buttons inside form container */}
-        <div className="border-t border-gray-200 p-6 sm:p-8 flex justify-between items-center bg-gray-50">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-6 py-3 text-gray-700 font-medium rounded-xl border border-gray-300 hover:bg-gray-100 transition-all duration-200"
-          >
-            Cancel
-          </button>
-
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3"
-          >
-            {isSaving ? (
-              <>
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
+      {/* Header */}
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-20 flex items-center justify-between">
+            {/* Left */}
+            <div className="flex items-start gap-4">
+              <button
+                onClick={handleCancel}
+                className="mt-1 flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm hover:bg-gray-100 transition"
+              >
+                <svg
+                  className="w-5 h-5 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
                   />
                 </svg>
-                Creating...
-              </>
-            ) : (
-              "Create Activity"
-            )}
-          </button>
+              </button>
+
+              <div>
+                {/* Breadcrumb */}
+                <p className="text-xs text-gray-500">
+                  Activities <span className="mx-1">/</span> Create
+                </p>
+
+                <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+                  Create New Activity
+                </h1>
+
+                <p className="text-sm text-gray-500 mt-0.5 max-w-xl">
+                  Fill in the details below to create and publish a new
+                  experience
+                </p>
+              </div>
+            </div>
+
+            {/* Right */}
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full bg-yellow-50 px-4 py-1.5 text-sm font-medium text-yellow-700 border border-yellow-200">
+                <span className="h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
+                Draft
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Tabs */}
+      <div className="sticky top-16 z-40 bg-white border-b border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <ActivityTabs activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
       </div>
-    </form>
-  </main>
-</div>
 
+      {/* Form */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="bg-white rounded-2xl shadow-lg ring-1 ring-black/5 overflow-hidden">
+            <div className="p-6 sm:p-10 lg:p-12">{renderTabContent()}</div>
+
+            {/* Footer Buttons inside form container */}
+            <div className="border-t border-gray-200 p-6 sm:p-8 flex justify-between items-center bg-gray-50">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-6 py-3 text-gray-700 font-medium rounded-xl border border-gray-300 hover:bg-gray-100 transition-all duration-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-3"
+              >
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Creating...
+                  </>
+                ) : (
+                  "Create Activity"
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
+      </main>
+    </div>
   );
 }

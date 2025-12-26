@@ -1,5 +1,5 @@
 import { baseApi } from "@/services/baseApi";
-import { create } from "lodash";
+
 export const categoryApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCategories: builder.query({
