@@ -19,7 +19,11 @@ const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/activities", label: "Activity", icon: BarChart3 },
-    { href: "/admin/activities/create", label: "Create Activity", icon: BarChart3 },
+  {
+    href: "/admin/activities/create",
+    label: "Create Activity",
+    icon: BarChart3,
+  },
   { href: "/admin/bookings", label: "Bookings", icon: Package },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/logout", label: "Logout", icon: LogOut },
@@ -77,7 +81,7 @@ export default function Sidebar() {
                       : "hover:bg-slate-800 text-slate-300"
                   )}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <Icon className="w-5 h-5 shrink-0" />
                   {isOpen && <span>{item.label}</span>}
                 </Link>
               </li>
