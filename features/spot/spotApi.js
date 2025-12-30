@@ -33,7 +33,7 @@ export const spotApi = baseApi.injectEndpoints({
     /* ================= UPDATE SPOT ================= */
     updateSpot: builder.mutation({
       query: ({ id, formData }) => ({
-        url: `/spots/${id}`,
+        url: `/spots/${id}/example`,
         method: "PUT",
         body: formData, // FormData (optional image)
       }),
@@ -46,7 +46,7 @@ export const spotApi = baseApi.injectEndpoints({
     /* ================= DELETE SPOT ================= */
     deleteSpot: builder.mutation({
       query: (id) => ({
-        url: `/spots/${id}`,
+        url: `/spots/${id}/example`,
         method: "DELETE",
       }),
       invalidatesTags: ["Spots"],
