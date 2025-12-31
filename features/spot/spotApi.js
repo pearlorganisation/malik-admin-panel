@@ -4,10 +4,25 @@ export const spotApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /* ================= GET ALL SPOTS ================= */
     getAllSpots: builder.query({
-      query: () => ({
-        url: "/spots",
-        method: "GET",
-      }),
+      query: ({ page = 1, limit = 10, category, search } = {}) => {
+        const params = new URLSearchParams();
+
+        params.append("page", page);
+        params.append("limit", limit);
+
+        if (category) {
+          params.append("category", category);
+        }
+
+        if (search) {
+          params.append("search", search); // 🔍 title search
+        }
+
+        return {
+          url: `/spots?${params.toString()}`,
+          method: "GET",
+        };
+      },
       providesTags: ["Spots"],
     }),
 
@@ -33,7 +48,7 @@ export const spotApi = baseApi.injectEndpoints({
     /* ================= UPDATE SPOT ================= */
     updateSpot: builder.mutation({
       query: ({ id, formData }) => ({
-        url: `/spots/${id}/example`,
+        url: `/spots/${id}`,
         method: "PUT",
         body: formData, // FormData (optional image)
       }),
@@ -46,7 +61,7 @@ export const spotApi = baseApi.injectEndpoints({
     /* ================= DELETE SPOT ================= */
     deleteSpot: builder.mutation({
       query: (id) => ({
-        url: `/spots/${id}/example`,
+        url: `/spots/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Spots"],

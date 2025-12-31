@@ -6,25 +6,44 @@ import {
   useUpdatePlaceMutation,
   useDeletePlaceMutation,
 } from "@/features/place/placeApi";
+import { useGetAllSpotsQuery } from "@/features/spot/spotApi";
+import {
+  Edit,
+  Trash2,
+  X,
+  Image as ImageIcon,
+  MapPin,
+  Info,
+  Car,
+  Bed,
+  ShoppingBag,
+  TreePine,
+  Waves,
+  Ticket,
+} from "lucide-react";
 
-import { useGetAllSpotsQuery } from "@/features/spot/spotApi"; // Adjust path if needed
+const TABS = [
+  { id: "basic", label: "Basic Info", icon: Info },
+  { id: "quick", label: "Quick Facts", icon: Car },
+  { id: "map", label: "Map & Tips", icon: MapPin },
+  { id: "landmarks", label: "Key Landmarks", icon: Ticket },
+  { id: "guide", label: "Travel Guide", icon: ShoppingBag },
+  { id: "stay", label: "Where to Stay", icon: Bed },
+];
 
 export default function ManagePlaces() {
-  const { data, isLoading, refetch } = useGetAllPlacesQuery();
+  const {
+    data: placesData,
+    isLoading: loadingPlaces,
+    refetch,
+  } = useGetAllPlacesQuery();
   const [createPlace, { isLoading: creating }] = useCreatePlaceMutation();
   const [updatePlace, { isLoading: updating }] = useUpdatePlaceMutation();
   const [deletePlace] = useDeletePlaceMutation();
 
-  const {
-    data: spotsData,
-    isLoading: spotsLoading,
-    error: spotsError,
-  } = useGetAllSpotsQuery();
-
-  const allSpots = spotsData?.data || [];
-  const places = data?.data || [];
-
+  const places = placesData?.data || [];
   const [editingPlace, setEditingPlace] = useState(null);
+  const [activeTab, setActiveTab] = useState("basic");
 
   const initialForm = {
     name: "",
@@ -33,39 +52,26 @@ export default function ManagePlaces() {
     tagline: "",
     heroImage: null,
     about: "",
-
     quickFacts: {
       climate: "Desert",
       bestTime: "Oct - Apr",
       nearBy: { name: "Dubai", distance: "1.5 Hrs" },
       safety: "Very Safe",
     },
-
     travelTips: [{ category: "", tip: "" }],
-
-    map: {
-      latitude: "",
-      longitude: "",
-      mapUrl: "",
-    },
-
-    // New keyLandmarks schema: location + coordinates
+    map: { latitude: "", longitude: "", mapUrl: "" },
     keyLandmarks: [],
-
     travelGuide: {
-      mustVisitSpots: [],
       shoppingAndMalls: [],
       beaches: [],
       parksAndNature: [],
       freeActivities: [],
     },
-
     whereToStay: [],
   };
 
   const [form, setForm] = useState(initialForm);
 
-  // Populate form when editing
   useEffect(() => {
     if (editingPlace) {
       setForm({
@@ -75,49 +81,27 @@ export default function ManagePlaces() {
         tagline: editingPlace.tagline || "",
         heroImage: null,
         about: editingPlace.about || "",
-
         quickFacts: {
-          climate: editingPlace.quickFacts?.climate || "Desert",
-          bestTime: editingPlace.quickFacts?.bestTime || "Oct - Apr",
+          ...initialForm.quickFacts,
+          ...editingPlace.quickFacts,
           nearBy: {
-            name: editingPlace.quickFacts?.nearBy?.name || "Dubai",
-            distance: editingPlace.quickFacts?.nearBy?.distance || "1.5 Hrs",
+            ...initialForm.quickFacts.nearBy,
+            ...editingPlace.quickFacts?.nearBy,
           },
-          safety: editingPlace.quickFacts?.safety || "Very Safe",
         },
-
         travelTips:
           editingPlace.travelTips?.length > 0
             ? editingPlace.travelTips
             : [{ category: "", tip: "" }],
-
-        map: {
-          latitude: editingPlace.map?.latitude || "",
-          longitude: editingPlace.map?.longitude || "",
-          mapUrl: editingPlace.map?.mapUrl || "",
-        },
-
-        // Updated keyLandmarks population
-        keyLandmarks:
-          editingPlace.keyLandmarks?.length > 0
-            ? editingPlace.keyLandmarks.map((lm) => ({
-                location: lm.location || "",
-                latitude: lm.latitude || "",
-                longitude: lm.longitude || "",
-                description: lm.description || "",
-              }))
-            : [],
-
+        map: { ...initialForm.map, ...editingPlace.map },
+        keyLandmarks: editingPlace.keyLandmarks || [],
         travelGuide: {
-          mustVisitSpots: editingPlace.travelGuide?.mustVisitSpots || [],
-          shoppingAndMalls: editingPlace.travelGuide?.shoppingAndMalls || [],
-          beaches: editingPlace.travelGuide?.beaches || [],
-          parksAndNature: editingPlace.travelGuide?.parksAndNature || [],
-          freeActivities: editingPlace.travelGuide?.freeActivities || [],
+          ...initialForm.travelGuide,
+          ...editingPlace.travelGuide,
         },
-
         whereToStay: editingPlace.whereToStay || [],
       });
+      setActiveTab("basic");
     } else {
       setForm(initialForm);
     }
@@ -125,104 +109,66 @@ export default function ManagePlaces() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-
-    if (name.startsWith("quickFacts.")) {
-      const field = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        quickFacts: { ...prev.quickFacts, [field]: value },
-      }));
-    } else if (name.startsWith("nearBy.")) {
-      const field = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        quickFacts: {
-          ...prev.quickFacts,
-          nearBy: { ...prev.quickFacts.nearBy, [field]: value },
-        },
-      }));
-    } else if (name.startsWith("map.")) {
-      const field = name.split(".")[1];
-      setForm((prev) => ({
-        ...prev,
-        map: { ...prev.map, [field]: value },
-      }));
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      if (
+        (parent === "quickFacts" && child === "name") ||
+        child === "distance"
+      ) {
+        setForm((prev) => ({
+          ...prev,
+          quickFacts: {
+            ...prev.quickFacts,
+            nearBy: { ...prev.quickFacts.nearBy, [child]: value },
+          },
+        }));
+      } else if (parent === "quickFacts") {
+        setForm((prev) => ({
+          ...prev,
+          quickFacts: { ...prev.quickFacts, [child]: value },
+        }));
+      } else if (parent === "map") {
+        setForm((prev) => ({ ...prev, map: { ...prev.map, [child]: value } }));
+      }
     } else {
-      setForm((prev) => ({
-        ...prev,
-        [name]: files ? files[0] : value,
-      }));
+      setForm((prev) => ({ ...prev, [name]: files ? files[0] : value }));
     }
   };
 
-  // Travel Tips
-  const addTravelTip = () => {
-    setForm((prev) => ({
-      ...prev,
-      travelTips: [...prev.travelTips, { category: "", tip: "" }],
-    }));
+  const addItem = (field) => {
+    const newItem =
+      field === "travelTips"
+        ? { category: "", tip: "" }
+        : { location: "", latitude: "", longitude: "", description: "" };
+    setForm((prev) => ({ ...prev, [field]: [...prev[field], newItem] }));
   };
 
-  const updateTravelTip = (index, field, value) => {
+  const updateItem = (field, index, key, value) => {
     setForm((prev) => {
-      const newTips = [...prev.travelTips];
-      newTips[index][field] = value;
-      return { ...prev, travelTips: newTips };
+      const items = [...prev[field]];
+      items[index][key] = value;
+      return { ...prev, [field]: items };
     });
   };
 
-  const removeTravelTip = (index) => {
+  const removeItem = (field, index) => {
     setForm((prev) => ({
       ...prev,
-      travelTips: prev.travelTips.filter((_, i) => i !== index),
+      [field]: prev[field].filter((_, i) => i !== index),
     }));
   };
 
-  // Key Landmarks - NEW SCHEMA
-  const addKeyLandmark = () => {
-    setForm((prev) => ({
-      ...prev,
-      keyLandmarks: [
-        ...prev.keyLandmarks,
-        { location: "", latitude: "", longitude: "", description: "" },
-      ],
-    }));
-  };
-
-  const updateKeyLandmark = (index, field, value) => {
+  const toggleSpot = (key, spotId) => {
     setForm((prev) => {
-      const newLandmarks = [...prev.keyLandmarks];
-      newLandmarks[index][field] = value;
-      return { ...prev, keyLandmarks: newLandmarks };
-    });
-  };
-
-  const removeKeyLandmark = (index) => {
-    setForm((prev) => ({
-      ...prev,
-      keyLandmarks: prev.keyLandmarks.filter((_, i) => i !== index),
-    }));
-  };
-
-  // Spot selection
-  const toggleSpotSelection = (category, spotId) => {
-    setForm((prev) => {
-      if (category === "whereToStay") {
-        return {
-          ...prev,
-          whereToStay: prev.whereToStay.includes(spotId)
-            ? prev.whereToStay.filter((id) => id !== spotId)
-            : [...prev.whereToStay, spotId],
-        };
-      }
-
+      const current =
+        key === "whereToStay" ? prev.whereToStay : prev.travelGuide[key];
       return {
         ...prev,
-        travelGuide: {
-          ...prev.travelGuide,
-          [category]: prev.travelGuide[category].includes(spotId)
-            ? prev.travelGuide[category].filter((id) => id !== spotId)
-            : [...prev.travelGuide[category], spotId],
+        [key === "whereToStay" ? "whereToStay" : "travelGuide"]: {
+          ...(key !== "whereToStay" ? prev.travelGuide : {}),
+          [key !== "whereToStay" ? key : undefined]: current.includes(spotId)
+            ? current.filter((id) => id !== spotId)
+            : [...current, spotId],
         },
       };
     });
@@ -230,50 +176,28 @@ export default function ManagePlaces() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
-
-    formData.append("name", form.name.trim());
-    formData.append("region", form.region.trim());
-    formData.append("country", form.country || "UAE");
-    formData.append("tagline", form.tagline || "");
-    formData.append("about", form.about);
-
-    if (form.heroImage) formData.append("heroImage", form.heroImage);
-
-    formData.append("quickFacts", JSON.stringify(form.quickFacts));
-
-    formData.append(
-      "travelTips",
-      JSON.stringify(form.travelTips.filter((t) => t.category && t.tip))
-    );
-
-    const mapData = {
-      latitude: form.map.latitude ? parseFloat(form.map.latitude) : undefined,
-      longitude: form.map.longitude
-        ? parseFloat(form.map.longitude)
-        : undefined,
-      mapUrl: form.map.mapUrl || "",
-    };
-    Object.keys(mapData).forEach(
-      (k) => mapData[k] === undefined && delete mapData[k]
-    );
-    formData.append("map", JSON.stringify(mapData));
-
-    // Updated keyLandmarks submission
-    const cleanedLandmarks = form.keyLandmarks
-      .filter((lm) => lm.location && lm.latitude && lm.longitude)
-      .map((lm) => ({
-        location: lm.location.trim(),
-        latitude: parseFloat(lm.latitude),
-        longitude: parseFloat(lm.longitude),
-        description: lm.description?.trim() || "",
-      }));
-
-    formData.append("keyLandmarks", JSON.stringify(cleanedLandmarks));
-
-    formData.append("travelGuide", JSON.stringify(form.travelGuide));
-    formData.append("whereToStay", JSON.stringify(form.whereToStay));
+    Object.keys(form).forEach((key) => {
+      if (key === "heroImage" && form[key]) formData.append(key, form[key]);
+      else if (key === "quickFacts" || key === "map" || key === "travelGuide")
+        formData.append(key, JSON.stringify(form[key]));
+      else if (key === "travelTips")
+        formData.append(
+          key,
+          JSON.stringify(form[key].filter((t) => t.category && t.tip))
+        );
+      else if (key === "keyLandmarks")
+        formData.append(
+          key,
+          JSON.stringify(
+            form[key].filter((k) => k.location && k.latitude && k.longitude)
+          )
+        );
+      else if (key === "whereToStay")
+        formData.append(key, JSON.stringify(form[key]));
+      else if (typeof form[key] === "string")
+        formData.append(key, form[key].trim());
+    });
 
     try {
       if (editingPlace) {
@@ -281,475 +205,445 @@ export default function ManagePlaces() {
       } else {
         await createPlace(formData).unwrap();
       }
-      resetForm();
+      setEditingPlace(null);
+      setForm(initialForm);
       refetch();
       alert("Place saved successfully!");
     } catch (err) {
-      console.error("Save error:", err);
-      alert("Failed to save: " + (err?.data?.message || "Unknown error"));
+      alert("Error: " + (err?.data?.message || "Failed to save"));
     }
   };
 
-  const handleEdit = (place) => setEditingPlace(place);
-
-  const handleDelete = async (id) => {
-    if (confirm("Delete this place permanently?")) {
-      await deletePlace(id);
-      refetch();
-    }
-  };
-
-  const resetForm = () => {
-    setEditingPlace(null);
-    setForm(initialForm);
-  };
-
-  if (isLoading)
-    return <p className="p-12 text-center text-3xl">Loading places...</p>;
+  if (loadingPlaces)
+    return (
+      <div className="p-8 text-center text-gray-600">Loading places...</div>
+    );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-7xl mx-auto space-y-12">
-        <h1 className="text-5xl font-bold text-gray-800">Manage Places</h1>
+    <div className="min-h-screen bg-gray-50 py-6 px-4">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-4xl font-bold text-gray-900">Manage Places</h1>
+          {editingPlace && (
+            <button
+              onClick={() => {
+                setEditingPlace(null);
+                setForm(initialForm);
+              }}
+              className="text-red-600 hover:text-red-700 font-medium flex items-center gap-2"
+            >
+              <X size={20} /> Cancel Editing
+            </button>
+          )}
+        </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-3xl shadow-2xl p-10 space-y-12"
-        >
-          <h2 className="text-4xl font-bold text-gray-700">
-            {editingPlace ? "Edit Place" : "Create New Place"}
-          </h2>
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6">
+            <h2 className="text-2xl font-bold">
+              {editingPlace
+                ? `Editing: ${editingPlace.name}`
+                : "Create New Place"}
+            </h2>
+          </div>
 
-          {/* Basic Information */}
-          <Section title="Basic Information">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder="Place Name *"
-                required
-                className="input-field"
-              />
-              <input
-                name="region"
-                value={form.region}
-                onChange={handleChange}
-                placeholder="Region *"
-                required
-                className="input-field"
-              />
-              <input
-                name="tagline"
-                value={form.tagline}
-                onChange={handleChange}
-                placeholder="Tagline"
-                className="input-field"
-              />
-              <input
-                name="country"
-                value={form.country}
-                onChange={handleChange}
-                placeholder="Country"
-                className="input-field"
-              />
-              <div className="md:col-span-2">
-                <input
-                  type="file"
-                  name="heroImage"
-                  onChange={handleChange}
-                  accept="image/*"
-                  className="file-input"
-                />
-              </div>
-              <textarea
-                name="about"
-                value={form.about}
-                onChange={handleChange}
-                placeholder="About this place *"
-                rows="6"
-                required
-                className="md:col-span-2 input-field"
-              />
-            </div>
-          </Section>
-
-          {/* Quick Facts */}
-          <Section title="Quick Facts">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <input
-                name="quickFacts.climate"
-                value={form.quickFacts.climate}
-                onChange={handleChange}
-                placeholder="Climate"
-                className="input-field"
-              />
-              <input
-                name="quickFacts.bestTime"
-                value={form.quickFacts.bestTime}
-                onChange={handleChange}
-                placeholder="Best Time to Visit"
-                className="input-field"
-              />
-              <input
-                name="nearBy.name"
-                value={form.quickFacts.nearBy.name}
-                onChange={handleChange}
-                placeholder="Nearby City"
-                className="input-field"
-              />
-              <input
-                name="nearBy.distance"
-                value={form.quickFacts.nearBy.distance}
-                onChange={handleChange}
-                placeholder="Distance"
-                className="input-field"
-              />
-              <input
-                name="quickFacts.safety"
-                value={form.quickFacts.safety}
-                onChange={handleChange}
-                placeholder="Safety Level"
-                className="input-field"
-              />
-            </div>
-          </Section>
-
-          {/* Main Map */}
-          <Section title="Main Map Location">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <input
-                type="number"
-                step="any"
-                name="map.latitude"
-                value={form.map.latitude}
-                onChange={handleChange}
-                placeholder="Latitude"
-                className="input-field"
-              />
-              <input
-                type="number"
-                step="any"
-                name="map.longitude"
-                value={form.map.longitude}
-                onChange={handleChange}
-                placeholder="Longitude"
-                className="input-field"
-              />
-              <input
-                type="url"
-                name="map.mapUrl"
-                value={form.map.mapUrl}
-                onChange={handleChange}
-                placeholder="Google Maps URL"
-                className="md:col-span-3 input-field"
-              />
-            </div>
-          </Section>
-
-          {/* Travel Tips */}
-          <Section
-            title="Travel Tips"
-            button="+ Add Tip"
-            onClick={addTravelTip}
-          >
-            {form.travelTips.map((tip, i) => (
-              <div key={i} className="flex gap-4 mb-5 items-start">
-                <input
-                  value={tip.category}
-                  onChange={(e) =>
-                    updateTravelTip(i, "category", e.target.value)
-                  }
-                  placeholder="Category"
-                  className="flex-1 input-field"
-                />
-                <input
-                  value={tip.tip}
-                  onChange={(e) => updateTravelTip(i, "tip", e.target.value)}
-                  placeholder="Tip"
-                  className="flex-2 input-field"
-                />
+          <form onSubmit={handleSubmit} className="p-6 lg:p-8">
+            {/* Tabs */}
+            <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200 pb-4 overflow-x-auto">
+              {TABS.map((tab) => (
                 <button
+                  key={tab.id}
                   type="button"
-                  onClick={() => removeTravelTip(i)}
-                  className="text-red-600 text-3xl mt-2"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-lg font-medium transition ${
+                    activeTab === tab.id
+                      ? "bg-indigo-600 text-white shadow-md"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
                 >
-                  ×
+                  <tab.icon size={18} />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span className="sm:hidden">{tab.label[0]}</span>
                 </button>
-              </div>
-            ))}
-          </Section>
+              ))}
+            </div>
 
-          {/* Key Landmarks - UPDATED */}
-          <Section
-            title="Key Landmarks"
-            button="+ Add Landmark"
-            onClick={addKeyLandmark}
-          >
-            {form.keyLandmarks.length === 0 && (
-              <p className="text-gray-500 italic">
-                No key landmarks added yet.
-              </p>
-            )}
-            {form.keyLandmarks.map((landmark, i) => (
-              <div
-                key={i}
-                className="border-2 border-indigo-200 rounded-2xl p-8 mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 relative"
-              >
-                <button
-                  type="button"
-                  onClick={() => removeKeyLandmark(i)}
-                  className="absolute top-4 right-4 text-red-600 hover:text-red-800 text-3xl font-bold"
-                >
-                  ×
-                </button>
-
+            {/* Tab Content */}
+            <div className="space-y-8">
+              {/* Basic Info */}
+              {activeTab === "basic" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <input
-                    type="text"
-                    value={landmark.location}
-                    onChange={(e) =>
-                      updateKeyLandmark(i, "location", e.target.value)
-                    }
-                    placeholder="Landmark Name (e.g. Sheikh Zayed Grand Mosque)"
-                    className="input-field"
+                  <Input
+                    label="Place Name *"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    required
                   />
-
-                  <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Region *"
+                    name="region"
+                    value={form.region}
+                    onChange={handleChange}
+                    required
+                  />
+                  <Input
+                    label="Country"
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Tagline"
+                    name="tagline"
+                    value={form.tagline}
+                    onChange={handleChange}
+                    className="md:col-span-2"
+                  />
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <ImageIcon className="inline mr-2" size={18} /> Hero Image
+                    </label>
                     <input
-                      type="number"
-                      step="any"
-                      value={landmark.latitude}
-                      onChange={(e) =>
-                        updateKeyLandmark(i, "latitude", e.target.value)
-                      }
-                      placeholder="Latitude"
-                      className="input-field"
+                      type="file"
+                      name="heroImage"
+                      onChange={handleChange}
+                      accept="image/*"
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                     />
-                    <input
-                      type="number"
-                      step="any"
-                      value={landmark.longitude}
-                      onChange={(e) =>
-                        updateKeyLandmark(i, "longitude", e.target.value)
-                      }
-                      placeholder="Longitude"
-                      className="input-field"
+                  </div>
+                  <div className="md:col-span-2">
+                    <Textarea
+                      label="About this place *"
+                      name="about"
+                      value={form.about}
+                      onChange={handleChange}
+                      rows={6}
+                      required
                     />
                   </div>
                 </div>
+              )}
 
-                <textarea
-                  value={landmark.description}
-                  onChange={(e) =>
-                    updateKeyLandmark(i, "description", e.target.value)
-                  }
-                  placeholder="Description of this landmark"
-                  rows="4"
-                  className="mt-6 w-full input-field"
-                />
-              </div>
-            ))}
-          </Section>
+              {/* Quick Facts */}
+              {activeTab === "quick" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Input
+                    label="Climate"
+                    name="quickFacts.climate"
+                    value={form.quickFacts.climate}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Best Time"
+                    name="quickFacts.bestTime"
+                    value={form.quickFacts.bestTime}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Nearby City"
+                    name="quickFacts.nearBy.name"
+                    value={form.quickFacts.nearBy.name}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Distance"
+                    name="quickFacts.nearBy.distance"
+                    value={form.quickFacts.nearBy.distance}
+                    onChange={handleChange}
+                  />
+                  <Input
+                    label="Safety"
+                    name="quickFacts.safety"
+                    value={form.quickFacts.safety}
+                    onChange={handleChange}
+                    className="lg:col-span-2"
+                  />
+                </div>
+              )}
 
-          {/* Travel Guide Categories */}
-          <Section title="Travel Guide - Recommended Spots">
-            {spotsLoading ? (
-              <p className="text-gray-600">Loading spots...</p>
-            ) : spotsError ? (
-              <p className="text-red-600">Error loading spots</p>
-            ) : allSpots.length === 0 ? (
-              <p className="text-gray-500">
-                No spots created yet. Create some first!
-              </p>
-            ) : (
-              <div className="space-y-10">
-                {[
-                  { key: "mustVisitSpots", label: "Must Visit Spots" },
-                  { key: "shoppingAndMalls", label: "Shopping & Malls" },
-                  { key: "beaches", label: "Beaches" },
-                  { key: "parksAndNature", label: "Parks & Nature" },
-                  { key: "freeActivities", label: "Free Activities" },
-                ].map(({ key, label }) => (
-                  <div key={key}>
-                    <h4 className="font-bold text-xl mb-4 text-gray-800">
-                      {label}
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {allSpots.map((spot) => (
-                        <label
-                          key={spot._id}
-                          className="flex items-center gap-4 p-4 border rounded-xl cursor-pointer hover:bg-blue-50 transition"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={form.travelGuide[key].includes(spot._id)}
-                            onChange={() => toggleSpotSelection(key, spot._id)}
-                            className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                          />
-                          <div className="flex-1">
-                            <p className="font-semibold">{spot.name}</p>
-                            {spot.category && (
-                              <p className="text-sm text-gray-600">
-                                {spot.category}
-                              </p>
-                            )}
-                          </div>
-                          {spot.mainImage && (
-                            <img
-                              src={spot.mainImage}
-                              alt={spot.name}
-                              className="w-16 h-12 object-cover rounded-lg"
-                            />
-                          )}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Section>
-
-          {/* Where To Stay */}
-          <Section title="Where To Stay (Hotels, Resorts, etc.)">
-            {spotsLoading ? (
-              <p className="text-gray-600">Loading spots...</p>
-            ) : allSpots.length === 0 ? (
-              <p className="text-gray-500">No spots available.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {allSpots.map((spot) => (
-                  <label
-                    key={spot._id}
-                    className="flex items-center gap-5 p-6 border-2 rounded-2xl cursor-pointer hover:border-indigo-500 transition bg-white shadow-md"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={form.whereToStay.includes(spot._id)}
-                      onChange={() =>
-                        toggleSpotSelection("whereToStay", spot._id)
-                      }
-                      className="w-6 h-6 text-indigo-600 rounded focus:ring-indigo-500"
+              {/* Map & Tips */}
+              {activeTab === "map" && (
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <Input
+                      label="Latitude"
+                      name="map.latitude"
+                      value={form.map.latitude}
+                      onChange={handleChange}
                     />
-                    <div className="flex-1">
-                      <p className="font-bold text-lg">{spot.name}</p>
-                      {spot.category && (
-                        <p className="text-gray-600">{spot.category}</p>
-                      )}
-                    </div>
-                    {spot.mainImage && (
-                      <img
-                        src={spot.mainImage}
-                        alt={spot.name}
-                        className="w-24 h-20 object-cover rounded-xl"
-                      />
-                    )}
-                  </label>
-                ))}
-              </div>
-            )}
-          </Section>
+                    <Input
+                      label="Longitude"
+                      name="map.longitude"
+                      value={form.map.longitude}
+                      onChange={handleChange}
+                    />
+                    <Input
+                      label="Google Maps URL"
+                      name="map.mapUrl"
+                      value={form.map.mapUrl}
+                      onChange={handleChange}
+                    />
+                  </div>
 
-          {/* Submit */}
-          <div className="flex gap-6 pt-12 border-t-4 border-gray-200">
-            <button
-              type="submit"
-              disabled={creating || updating}
-              className="px-12 py-5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white text-2xl font-bold rounded-2xl hover:from-indigo-700 hover:to-blue-700 disabled:opacity-60 shadow-xl"
-            >
-              {creating || updating
-                ? "Saving..."
-                : editingPlace
-                ? "Update Place"
-                : "Create Place"}
-            </button>
-            {editingPlace && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Travel Tips</h3>
+                    {form.travelTips.map((tip, i) => (
+                      <div key={i} className="flex gap-4 mb-4">
+                        <Input
+                          placeholder="Category"
+                          value={tip.category}
+                          onChange={(e) =>
+                            updateItem(
+                              "travelTips",
+                              i,
+                              "category",
+                              e.target.value
+                            )
+                          }
+                        />
+                        <Input
+                          placeholder="Tip"
+                          value={tip.tip}
+                          onChange={(e) =>
+                            updateItem("travelTips", i, "tip", e.target.value)
+                          }
+                          className="flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItem("travelTips", i)}
+                          className="text-red-600 mt-8"
+                        >
+                          <Trash2 size={20} />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addItem("travelTips")}
+                      className="text-indigo-600 font-medium"
+                    >
+                      + Add Travel Tip
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Key Landmarks */}
+              {activeTab === "landmarks" && (
+                <div>
+                  {form.keyLandmarks.map((lm, i) => (
+                    <div
+                      key={i}
+                      className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-gray-50 rounded-xl"
+                    >
+                      <Input
+                        placeholder="Location"
+                        value={lm.location}
+                        onChange={(e) =>
+                          updateItem(
+                            "keyLandmarks",
+                            i,
+                            "location",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <Input
+                        placeholder="Latitude"
+                        value={lm.latitude}
+                        onChange={(e) =>
+                          updateItem(
+                            "keyLandmarks",
+                            i,
+                            "latitude",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <Input
+                        placeholder="Longitude"
+                        value={lm.longitude}
+                        onChange={(e) =>
+                          updateItem(
+                            "keyLandmarks",
+                            i,
+                            "longitude",
+                            e.target.value
+                          )
+                        }
+                      />
+                      <div className="md:col-span-4 flex gap-4">
+                        <Input
+                          placeholder="Description (optional)"
+                          value={lm.description}
+                          onChange={(e) =>
+                            updateItem(
+                              "keyLandmarks",
+                              i,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeItem("keyLandmarks", i)}
+                          className="text-red-600"
+                        >
+                          <Trash2 size={24} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => addItem("keyLandmarks")}
+                    className="text-indigo-600 font-medium"
+                  >
+                    + Add Landmark
+                  </button>
+                </div>
+              )}
+
+              {/* Travel Guide Spots */}
+              {activeTab === "guide" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <SpotSelector
+                    label="Shopping & Malls"
+                    category="Shopping & Malls"
+                    formKey="shoppingAndMalls"
+                    selected={form.travelGuide.shoppingAndMalls}
+                    toggle={toggleSpot}
+                    icon={<ShoppingBag />}
+                  />
+                  <SpotSelector
+                    label="Beaches"
+                    category="Beach"
+                    formKey="beaches"
+                    selected={form.travelGuide.beaches}
+                    toggle={toggleSpot}
+                    icon={<Waves />}
+                  />
+                  <SpotSelector
+                    label="Parks & Nature"
+                    category="Park"
+                    formKey="parksAndNature"
+                    selected={form.travelGuide.parksAndNature}
+                    toggle={toggleSpot}
+                    icon={<TreePine />}
+                    className="lg:col-span-2"
+                  />
+                  <SpotSelector
+                    label="Free Activities"
+                    category="Free Activity"
+                    formKey="freeActivities"
+                    selected={form.travelGuide.freeActivities}
+                    toggle={toggleSpot}
+                    icon={<Ticket />}
+                    className="lg:col-span-2"
+                  />
+                </div>
+              )}
+
+              {/* Where to Stay */}
+              {activeTab === "stay" && (
+                <WhereToStaySelector
+                  selected={form.whereToStay}
+                  toggle={toggleSpot}
+                />
+              )}
+            </div>
+
+            {/* Submit */}
+            <div className="flex justify-end gap-4 mt-12 pt-8 border-t">
               <button
-                type="button"
-                onClick={resetForm}
-                className="px-12 py-5 bg-gray-300 text-gray-800 text-2xl font-bold rounded-2xl hover:bg-gray-400 shadow-xl"
+                type="submit"
+                disabled={creating || updating}
+                className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-60 shadow-lg text-lg"
               >
-                Cancel
+                {creating || updating
+                  ? "Saving..."
+                  : editingPlace
+                  ? "Update Place"
+                  : "Create Place"}
               </button>
-            )}
-          </div>
-        </form>
+            </div>
+          </form>
+        </div>
 
         {/* Places List */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-10 bg-gradient-to-r from-indigo-600 to-blue-600 text-white">
-            <h2 className="text-4xl font-bold">All Places ({places.length})</h2>
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="p-6 bg-gray-50 border-b">
+            <h2 className="text-2xl font-bold text-gray-900">
+              All Places ({places.length})
+            </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-100">
+              <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-10 py-6 text-left text-lg font-semibold">
-                    Hero Image
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
+                    Image
                   </th>
-                  <th className="px-10 py-6 text-left text-lg font-semibold">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700">
                     Name
                   </th>
-                  <th className="px-10 py-6 text-left text-lg font-semibold">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 hidden md:table-cell">
                     Region
                   </th>
-                  <th className="px-10 py-6 text-left text-lg font-semibold">
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 hidden lg:table-cell">
+                    Tagline
+                  </th>
+                  <th className="px-6 py-4 text-right text-sm font-medium text-gray-700">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {places.map((place) => (
-                  <tr
-                    key={place._id}
-                    className="border-t hover:bg-gray-50 transition"
-                  >
-                    <td className="px-10 py-8">
+                  <tr key={place._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
                       {place.heroImage ? (
                         <img
                           src={place.heroImage}
                           alt={place.name}
-                          className="w-40 h-28 object-cover rounded-2xl shadow-lg"
+                          className="w-16 h-12 object-cover rounded-lg"
                         />
                       ) : (
-                        <div className="w-40 h-28 bg-gray-200 rounded-2xl flex items-center justify-center text-gray-500 font-medium">
-                          No Image
-                        </div>
+                        <div className="w-16 h-12 bg-gray-200 rounded-lg" />
                       )}
                     </td>
-                    <td className="px-10 py-8 text-2xl font-bold text-gray-800">
+                    <td className="px-6 py-4 font-medium text-gray-900">
                       {place.name}
                     </td>
-                    <td className="px-10 py-8 text-xl text-gray-700">
+                    <td className="px-6 py-4 text-gray-600 hidden md:table-cell">
                       {place.region}
                     </td>
-                    <td className="px-10 py-8 space-x-8">
+                    <td className="px-6 py-4 text-gray-600 hidden lg:table-cell">
+                      {place.tagline || "-"}
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-3">
                       <button
-                        onClick={() => handleEdit(place)}
-                        className="text-indigo-600 font-bold text-xl hover:underline"
+                        onClick={() => setEditingPlace(place)}
+                        className="text-indigo-600 hover:text-indigo-800"
                       >
-                        Edit
+                        <Edit size={20} />
                       </button>
                       <button
-                        onClick={() => handleDelete(place._id)}
-                        className="text-red-600 font-bold text-xl hover:underline"
+                        onClick={() =>
+                          deletePlace(place._id).unwrap().then(refetch)
+                        }
+                        className="text-red-600 hover:text-red-800"
                       >
-                        Delete
+                        <Trash2 size={20} />
                       </button>
                     </td>
                   </tr>
                 ))}
-                {places.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan="4"
-                      className="text-center py-20 text-gray-500 text-2xl"
-                    >
-                      No places yet. Create your first one above!
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
@@ -759,23 +653,146 @@ export default function ManagePlaces() {
   );
 }
 
-// Reusable Section
-function Section({ title, children, button, onClick }) {
+// Reusable Components
+function Input({ label, className = "", ...props }) {
   return (
-    <div className="border-t-4 border-gray-200 pt-12 first:border-t-0 first:pt-0">
-      <div className="flex justify-between items-center mb-10">
-        <h3 className="text-3xl font-bold text-gray-800">{title}</h3>
-        {button && (
-          <button
-            type="button"
-            onClick={onClick}
-            className="text-indigo-600 hover:text-indigo-800 font-bold text-xl"
-          >
-            {button}
-          </button>
-        )}
-      </div>
-      {children}
+    <div className={className}>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
+      <input
+        {...props}
+        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+      />
+    </div>
+  );
+}
+
+function Textarea({ label, ...props }) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <textarea
+        {...props}
+        className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition"
+      />
+    </div>
+  );
+}
+
+function SpotSelector({
+  label,
+  category,
+  formKey,
+  selected,
+  toggle,
+  icon,
+  className = "",
+}) {
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useGetAllSpotsQuery({
+    limit: 30,
+    category,
+    search: search || undefined,
+  });
+
+  return (
+    <div className={className}>
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        {icon} {label}
+      </h3>
+      <input
+        type="text"
+        placeholder={`Search ${label.toLowerCase()}...`}
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full mb-4 px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500"
+      />
+      {isLoading ? (
+        <p className="text-gray-500">Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+          {(data?.data || []).map((spot) => (
+            <label
+              key={spot._id}
+              className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition ${
+                selected.includes(spot._id)
+                  ? "border-indigo-500 bg-indigo-50"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(spot._id)}
+                onChange={() => toggle(formKey, spot._id)}
+                className="w-5 h-5 text-indigo-600 rounded"
+              />
+              <div className="flex-1">
+                <p className="font-medium">{spot.title || spot.name}</p>
+                <p className="text-sm text-gray-500">{spot.category}</p>
+              </div>
+              {spot.mainImage && (
+                <img
+                  src={spot.mainImage}
+                  alt=""
+                  className="w-16 h-12 object-cover rounded-lg"
+                />
+              )}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WhereToStaySelector({ selected, toggle }) {
+  const { data, isLoading } = useGetAllSpotsQuery({ limit: 30 });
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <Bed /> Where to Stay
+      </h3>
+      {isLoading ? (
+        <p className="text-gray-500">Loading accommodations...</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+          {(data?.data || []).map((spot) => (
+            <label
+              key={spot._id}
+              className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition ${
+                selected.includes(spot._id)
+                  ? "border-indigo-500 bg-indigo-50"
+                  : "border-gray-200 hover:border-gray-400"
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={selected.includes(spot._id)}
+                onChange={() => toggle("whereToStay", spot._id)}
+                className="w-5 h-5 text-indigo-600 rounded"
+              />
+              <div className="flex-1">
+                <p className="font-medium">{spot.name || spot.title}</p>
+                <p className="text-sm text-gray-500">
+                  {spot.category || "Accommodation"}
+                </p>
+              </div>
+              {spot.mainImage && (
+                <img
+                  src={spot.mainImage}
+                  alt=""
+                  className="w-20 h-14 object-cover rounded-lg"
+                />
+              )}
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

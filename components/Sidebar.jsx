@@ -26,6 +26,8 @@ const menuItems = [
   },
   { href: "/admin/bookings", label: "Bookings", icon: Package },
   { href: "/admin/settings", label: "Settings", icon: Settings },
+  { href: "/admin/places", label: "Places", icon: Settings },
+  { href: "/admin/spots", label: "Spots", icon: Settings },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];
 
