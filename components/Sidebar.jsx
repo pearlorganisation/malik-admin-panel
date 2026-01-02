@@ -5,11 +5,14 @@ import {
   LayoutDashboard,
   Users,
   BarChart3,
+  PlusSquare,
   Package,
   Settings,
+  MapPin,
+  Map,
+  HelpCircle,
   LogOut,
-  Menu,
-  X,
+  X
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -25,9 +28,10 @@ const menuItems = [
     icon: BarChart3,
   },
   { href: "/admin/bookings", label: "Bookings", icon: Package },
+  { href: "/admin/places", label: "Places", icon: MapPin },
+  { href: "/admin/spots", label: "Spots", icon: Map },
+  { href: "/admin/enquiry", label: "Enquiry", icon: HelpCircle },
   { href: "/admin/settings", label: "Settings", icon: Settings },
-  { href: "/admin/places", label: "Places", icon: Settings },
-  { href: "/admin/spots", label: "Spots", icon: Settings },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];
 
@@ -66,7 +70,7 @@ export default function Sidebar() {
       </div>
 
       {/* Menu */}
-      <nav className="flex-1 overflow-y-auto py-6">
+      <nav className="flex-1 overflow-y-auto py-3">
         <ul className="space-y-2 px-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
