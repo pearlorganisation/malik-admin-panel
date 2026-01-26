@@ -31,6 +31,7 @@ const menuItems = [
   { href: "/admin/places", label: "Places", icon: MapPin },
   { href: "/admin/spots", label: "Spots", icon: Map },
   { href: "/admin/enquiry", label: "Enquiry", icon: HelpCircle },
+  { href: "/admin/categories", label: "Categories", icon: HelpCircle },
   { href: "/admin/settings", label: "Settings", icon: Settings },
   { href: "/logout", label: "Logout", icon: LogOut },
 ];

@@ -9,6 +9,7 @@ import {
   useDeleteCategoryMutation,
 } from "@/features/category/categoryApi"; // Adjust path if needed
 import { Trash2, Edit, Plus, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 export default function CategoriesManagement() {
   const [page, setPage] = useState(1);
@@ -22,8 +23,15 @@ export default function CategoriesManagement() {
     error,
   } = useGetCategoriesQuery({ page, limit, search });
 
+
   const categories = response?.data || [];
   const totalPages = response?.totalPages || 1;
+
+  // Filter categories locally based on search input
+const filteredCategories = categories.filter((cat) =>
+  cat.name.toLowerCase().includes(search.toLowerCase()) ||
+  (cat.description?.toLowerCase().includes(search.toLowerCase()))
+);
 
   const [createCategory, { isLoading: isCreating }] =
     useCreateCategoryMutation();
@@ -53,7 +61,7 @@ export default function CategoriesManagement() {
         name: category.name,
         description: category.description || "",
       });
-      setImagePreview(category.image?.secure_url || null);
+      setImagePreview(category.image?.url || null);
     } else {
       setEditingCategory(null);
       setFormData({ name: "", description: "" });
@@ -72,7 +80,7 @@ export default function CategoriesManagement() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      alert("Category name is required");
+       toast.error("Category name is required");
       return;
     }
 
@@ -85,14 +93,14 @@ export default function CategoriesManagement() {
     try {
       if (editingCategory) {
         await updateCategory({ id: editingCategory._id, data }).unwrap();
-        alert("Category updated successfully");
+         toast.success("Category updated successfully");
       } else {
         await createCategory(data).unwrap();
-        alert("Category created successfully");
+        toast.success("Category created successfully");
       }
       closeModal();
     } catch (err) {
-      alert(err?.data?.message || "Something went wrong");
+      toast.error(err?.data?.message || "Something went wrong");
     }
   };
 
@@ -101,7 +109,7 @@ export default function CategoriesManagement() {
 
     try {
       await deleteCategory(id).unwrap();
-      alert("Category deleted successfully");
+      toast.success("Category deleted successfully");
     } catch (err) {
       alert(err?.data?.message || "Delete failed");
     }
@@ -152,7 +160,7 @@ export default function CategoriesManagement() {
           <>
             {/* Categories Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {categories.map((cat) => (
+              {filteredCategories.map((cat) => (
                 <div
                   key={cat._id}
                   className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
@@ -232,8 +240,9 @@ export default function CategoriesManagement() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full max-h-screen overflow-y-auto p-6 relative">
+        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center overflow-y-auto scrollbar-hide justify-center z-50 p-4">
+        <div className="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 px-8  scrollbar-hide relative">
+
             <button
               onClick={closeModal}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
