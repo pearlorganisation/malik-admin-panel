@@ -2,55 +2,61 @@ import { baseApi } from "@/services/baseApi";
 
 export const activityApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // GET ALL ACTIVITIES
+
+    /* ================= GET ALL ================= */
     getActivities: builder.query({
-      query: ({ page = 1, limit = 10, isActive } = {}) => {
+      query: ({ page = 1, limit = 50, category, search, location } = {}) => {
         const params = new URLSearchParams({ page, limit });
-        if (isActive !== undefined) params.append("isActive", isActive);
-        return `/activity?${params.toString()}`;
+        if (category) params.append("category", category);
+        if (search) params.append("search", search);
+        if (location) params.append("location", location);
+        return `/activities?${params.toString()}`;
       },
       providesTags: ["Activity"],
     }),
 
-    // GET SINGLE ACTIVITY
+    /* ================= GET BY ID ================= */
     getActivityById: builder.query({
-      query: (id) => `/activity/${id}`,
-      providesTags: (result, error, id) => [{ type: "Activity", id }],
+      query: (id) => `/activities/${id}`,
+      providesTags: (_, __, id) => [{ type: "Activity", id }],
     }),
 
-    // CREATE ACTIVITY
+    /* ================= CREATE ================= */
     createActivity: builder.mutation({
-      query: (data) => ({
-        url: "/activity",
+      query: (formData) => ({
+        url: `/activities`,
         method: "POST",
-        body: data,
+        body: formData, // MUST be FormData
       }),
       invalidatesTags: ["Activity"],
     }),
 
-    // UPDATE ACTIVITY
+    /* ================= UPDATE ================= */
     updateActivity: builder.mutation({
-      query: ({ id, data }) => ({
-        url: `/activity/${id}`,
+      query: ({ id, formData }) => ({
+        url: `/activities/${id}`,
         method: "PUT",
-        body: data,
+        body: formData,
       }),
-      invalidatesTags: ["Activity"],
+      invalidatesTags: (_, __, { id }) => [
+        "Activity",
+        { type: "Activity", id },
+      ],
     }),
 
-    // DELETE ACTIVITY
+    /* ================= DELETE ================= */
     deleteActivity: builder.mutation({
       query: (id) => ({
-        url: `/activity/${id}`,
+        url: `/activities/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Activity"],
     }),
 
-    // TOGGLE ACTIVE STATUS
+    /* ================= TOGGLE ACTIVE ================= */
     toggleActivityStatus: builder.mutation({
       query: (id) => ({
-        url: `/activity/${id}/toggle-active`,
+        url: `/activities/${id}/toggle-active`,
         method: "PATCH",
       }),
       invalidatesTags: ["Activity"],
