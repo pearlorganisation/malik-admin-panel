@@ -27,3 +27,10 @@
   -ms-overflow-style: none; /* IE, Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+body {
+  overflow-x: hidden;
+}
+
+
+

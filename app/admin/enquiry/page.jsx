@@ -68,7 +68,7 @@ export default function ContactsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto font-sans text-gray-900">
+   <div className="p-2 w-full max-w-7xl mx-auto font-sans text-gray-900 overflow-x-hidden">
       {/* Page Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900">
@@ -117,8 +117,8 @@ export default function ContactsPage() {
 
       {/* Table Section */}
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className="w-full overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
             <thead className="bg-gray-50 text-gray-500">
               <tr>
                 <th className="px-6 py-4 font-medium">Name</th>
@@ -149,14 +149,14 @@ export default function ContactsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-gray-900">{item.email}</span>
+                        <span className="text-gray-900 break-words">{item.email}</span>
                         <span className="text-xs text-gray-500">
                           {item.phone}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="max-w-[200px] truncate text-gray-500">
+                      <p className="max-w-[200px] truncate text-gray-500 break-words">
                         {item.message}
                       </p>
                     </td>

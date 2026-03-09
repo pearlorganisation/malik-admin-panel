@@ -1,0 +1,491 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  X,
+  FileText,
+  Clock,
+  MapPin,
+  Utensils,
+  Image as ImageIcon,
+  Video,
+  Layers,
+  Info,
+  CheckCircle,
+} from 'lucide-react';
+import AddPackageModal from './AddPackageModal';
+import ViewPackageModal from './ViewPackageModal';
+
+export default function ViewActivityModal({
+  activity,
+  onClose,
+  onPackageAdded,
+}) {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showAddPackage, setShowAddPackage] = useState(false);
+
+  const [selectedPackage, setSelectedPackage] = useState(null);
+const [showViewPackage, setShowViewPackage] = useState(false);
+
+  if (!activity) return null;
+
+  const formatDate = (date) => {
+    if (!date) return '—';
+    try {
+      return new Date(date).toLocaleDateString();
+    } catch {
+      return '—';
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: FileText },
+    { id: 'itinerary', label: 'Itinerary', icon: Clock },
+    { id: 'logistics', label: 'Logistics', icon: MapPin },
+    { id: 'dining', label: 'Dining', icon: Utensils },
+    { id: 'media', label: 'Media', icon: ImageIcon },
+    { id: 'packages', label: 'Packages', icon: Layers },
+  ];
+
+  const handleViewPackage = (pkg) => {
+  setSelectedPackage(pkg);
+  setShowViewPackage(true);
+};
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      {/* BACKDROP */}
+      <div
+        className="absolute inset-0 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* MODAL */}
+      <div className="relative w-full max-w-4xl max-h-[92vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        {/* ================= HEADER ================= */}
+        <div className="flex items-start justify-between p-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+          <div>
+            <div className="flex flex-wrap items-center gap-3 mb-1">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {activity.name}
+              </h2>
+              <StatusBadge active={activity.isActive} />
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
+              <span>
+                {activity.categoryId?.name ||
+                  activity.categoryId ||
+                  'No Category'}
+              </span>
+              <span>•</span>
+              <span>
+                {activity.placeId?.name ||
+                  activity.placeId ||
+                  'No Location'}
+              </span>
+              <span>•</span>
+              <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">
+                /{activity.slug || '—'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* ================= TABS ================= */}
+        <div className="flex border-b border-gray-100 px-4 sm:px-6 py-4 overflow-x-auto scrollbar-hide bg-white">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition whitespace-nowrap ${
+                  isActive
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ================= CONTENT ================= */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide bg-gray-50 p-4 sm:p-6">
+          <div className="max-w-4xl mx-auto space-y-6">
+
+            {/* ================= OVERVIEW ================= */}
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <SectionCard title="Basic Information" icon={Info}>
+                    <InfoGrid>
+                      <InfoItem label="Name" value={activity.name} />
+                      <InfoItem label="Slug" value={activity.slug} />
+                      <InfoItem
+                        label="Category"
+                        value={activity.categoryId?.name}
+                      />
+                      <InfoItem
+                        label="Location"
+                        value={activity.placeId?.name}
+                      />
+                      <InfoItem
+                        label="Time Slots"
+                        value={
+                          activity.timeSlots?.length
+                            ? activity.timeSlots.join(', ')
+                            : '—'
+                        }
+                      />
+                    </InfoGrid>
+                  </SectionCard>
+
+                  {activity.Experience && (
+                    <SectionCard title="Experience" icon={FileText}>
+                      <div className="space-y-3 text-sm">
+                        <p className="font-semibold">
+                          {activity.Experience.title}
+                        </p>
+
+                        {activity.Experience.note && (
+                          <p className="text-amber-700 bg-amber-50 px-3 py-2 rounded-lg inline-block">
+                            Note: {activity.Experience.note}
+                          </p>
+                        )}
+
+                        <p className="text-gray-600 whitespace-pre-line">
+                          {activity.Experience.description}
+                        </p>
+
+                        {activity.Experience.highlights?.length > 0 && (
+                          <ul className="grid sm:grid-cols-2 gap-2 mt-2">
+                            {activity.Experience.highlights.map((h, i) => (
+                              <li key={i} className="flex gap-2 text-gray-700">
+                                <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5" />
+                                {h}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </SectionCard>
+                  )}
+                </div>
+
+                <div className="space-y-6">
+                  <SectionCard title="System Details" icon={Info}>
+                    <dl className="space-y-2 text-xs">
+                      <MetaRow label="ID" value={activity._id} />
+                      <MetaRow
+                        label="Created"
+                        value={formatDate(activity.createdAt)}
+                      />
+                      <MetaRow
+                        label="Updated"
+                        value={formatDate(activity.updatedAt)}
+                      />
+                    </dl>
+                  </SectionCard>
+                </div>
+              </div>
+            )}
+
+            {/* ================= ITINERARY ================= */}
+            {activeTab === 'itinerary' && (
+              <SectionCard title="Itinerary Timeline" icon={Clock}>
+                {activity.Itinerary?.length ? (
+                  <div className="space-y-4">
+                    {activity.Itinerary.map((item, i) => (
+                      <ItineraryCard key={i} item={item} />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No itinerary details available." />
+                )}
+              </SectionCard>
+            )}
+
+            {/* ================= LOGISTICS ================= */}
+            {activeTab === 'logistics' && (
+              <div className="space-y-6">
+                <SectionCard title="Pickup Zone" icon={MapPin}>
+                  {activity.InfoAndLogistics?.pickupZone ? (
+                    <div className="space-y-2 text-sm">
+                      <p>
+                        {activity.InfoAndLogistics.pickupZone.description ||
+                          '—'}
+                      </p>
+
+                      {activity.InfoAndLogistics.pickupZone.note && (
+                        <p className="text-amber-700 bg-amber-50 px-3 py-2 rounded-lg inline-block">
+                          Note: {activity.InfoAndLogistics.pickupZone.note}
+                        </p>
+                      )}
+
+                      {activity.InfoAndLogistics.pickupZone.mapLink && (
+                        <a
+                          href={activity.InfoAndLogistics.pickupZone.mapLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-blue-600 font-medium hover:underline"
+                        >
+                          View Map
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    <EmptyState message="No pickup information." />
+                  )}
+                </SectionCard>
+
+                <SectionCard title="Private SUV" icon={Layers}>
+                  {activity.PrivateSUV?.available ? (
+                    <div className="text-sm space-y-1">
+                      <p className="font-medium text-emerald-600">
+                        Available
+                      </p>
+                      <p>Model: {activity.PrivateSUV.model}</p>
+                      <p>Fee: AED {activity.PrivateSUV.fee}</p>
+                    </div>
+                  ) : (
+                    <EmptyState message="Private SUV not available." />
+                  )}
+                </SectionCard>
+              </div>
+            )}
+
+            {/* ================= DINING ================= */}
+            {activeTab === 'dining' && (
+              <SectionCard title="BBQ Buffet" icon={Utensils}>
+                {activity.BBQ_BUFFET ? (
+                  <div className="space-y-4">
+                    <p className="font-semibold">
+                      {activity.BBQ_BUFFET.title}
+                    </p>
+
+                    <p className="text-sm text-gray-600">
+                      {activity.BBQ_BUFFET.description}
+                    </p>
+
+                    {activity.BBQ_BUFFET.fields?.map((field, i) => (
+                      <div key={i}>
+                        <p className="font-medium text-sm mb-1">
+                          {field.category}
+                        </p>
+
+                        <ul className="grid sm:grid-cols-2 gap-2 text-sm">
+                          {field.items.map((item, idx) => (
+                            <li key={idx} className="flex gap-2 text-gray-700">
+                              <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState message="No dining information available." />
+                )}
+              </SectionCard>
+            )}
+
+            {/* ================= MEDIA ================= */}
+            {activeTab === 'media' && (
+              <div className="space-y-6">
+                {activity.Video?.secure_url && (
+                  <SectionCard title="Video Tour" icon={Video}>
+                    <video
+                      src={activity.Video.secure_url}
+                      controls
+                      className="w-full rounded-xl"
+                    />
+                  </SectionCard>
+                )}
+
+                <SectionCard
+                  title={`Gallery (${activity.Images?.length || 0})`}
+                  icon={ImageIcon}
+                >
+                  {activity.Images?.length ? (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {activity.Images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={img.secure_url}
+                          alt=""
+                          className="h-24 w-full object-cover rounded-xl hover:scale-105 transition"
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <EmptyState message="No images available." />
+                  )}
+                </SectionCard>
+              </div>
+            )}
+
+            {/* ================= PACKAGES ================= */}
+            {activeTab === 'packages' && (
+              <SectionCard
+                title={`Packages (${activity.packages?.length || 0})`}
+                icon={Layers}
+                action={
+                  <button
+                    onClick={() => setShowAddPackage(true)}
+                    className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition"
+                  >
+                    + Add Package
+                  </button>
+                }
+              >
+                {activity.packages?.length ? (
+                  <div className="grid md:grid-cols-2 gap-4">
+                   {activity.packages.map((pkg) => (
+  <PackageCard
+    key={pkg._id}
+    pkg={pkg}
+    onClick={() => handleViewPackage(pkg)}
+  />
+))}
+                  </div>
+                ) : (
+                  <EmptyState message="No packages yet." />
+                )}
+              </SectionCard>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ADD PACKAGE MODAL */}
+     {showAddPackage && (
+  <AddPackageModal
+    activityId={activity._id}
+    onClose={() => setShowAddPackage(false)}
+    onSuccess={() => {
+      setShowAddPackage(false);
+      onPackageAdded?.();
+    }}
+  />
+  
+)}
+
+{showViewPackage && (
+  <ViewPackageModal
+    package={selectedPackage}
+    isOpen={showViewPackage}
+    onClose={() => setShowViewPackage(false)}
+  />
+)}
+    </div>
+  );
+}
+
+/* ================= SMALL COMPONENTS ================= */
+
+const StatusBadge = ({ active }) => (
+  <span
+    className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+      active
+        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+        : 'bg-rose-50 text-rose-700 border-rose-200'
+    }`}
+  >
+    {active ? 'Active' : 'Inactive'}
+  </span>
+);
+
+const SectionCard = ({ title, icon: Icon, children, action }) => (
+  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-50">
+      <div className="flex items-center gap-2">
+        {Icon && (
+          <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+            <Icon className="w-4 h-4" />
+          </div>
+        )}
+        <h3 className="font-bold text-gray-900">{title}</h3>
+      </div>
+      {action}
+    </div>
+    {children}
+  </div>
+);
+
+const InfoGrid = ({ children }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    {children}
+  </div>
+);
+
+const InfoItem = ({ label, value }) => (
+  <div className="bg-gray-50 rounded-xl p-3">
+    <p className="text-gray-500 text-xs">{label}</p>
+    <div className="font-semibold text-gray-900">{value || '—'}</div>
+  </div>
+);
+
+const MetaRow = ({ label, value }) => (
+  <div className="flex justify-between border-b border-gray-100 py-1">
+    <dt className="text-gray-500">{label}</dt>
+    <dd className="text-gray-900 font-mono truncate ">
+      {value || '—'}
+    </dd>
+  </div>
+);
+
+const ItineraryCard = ({ item }) => (
+  <div className="bg-white border border-gray-100 rounded-xl p-4">
+    <div className="flex justify-between mb-2">
+      <p className="font-semibold">{item.title}</p>
+      <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+        {item.time}
+      </span>
+    </div>
+    <p className="text-sm text-gray-600">{item.description}</p>
+    {item.image?.secure_url && (
+      <img
+        src={item.image.secure_url}
+        alt=""
+        className="mt-3 h-40 w-full object-cover rounded-lg"
+      />
+    )}
+    
+  </div>
+);
+
+const PackageCard = ({ pkg, onClick }) => (
+  <div
+    onClick={onClick}
+    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition cursor-pointer"
+  >
+    <div className="flex justify-between mb-2">
+      <p className="font-bold">{pkg.name}</p>
+      <p className="font-bold text-blue-600">AED {pkg.price}</p>
+    </div>
+
+    {pkg.description && (
+      <p className="text-sm text-gray-600">{pkg.description}</p>
+    )}
+  </div>
+);
+
+const EmptyState = ({ message }) => (
+  <div className="text-center py-8 px-4 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+    <p className="text-gray-400 text-sm">{message}</p>
+  </div>
+);

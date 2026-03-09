@@ -183,7 +183,7 @@ console.log("Fetched users:", users);
                     <th className="px-6 py-4">Email</th>
                     <th className="px-6 py-4">Role</th>
                     <th className="px-6 py-4">Created At</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
+                    {/* <th className="px-6 py-4 text-right">Actions</th> */}
                   </tr>
                 </thead>
                 <tbody>
@@ -203,15 +203,14 @@ console.log("Fetched users:", users);
                           ? new Date(user.createdAt).toLocaleDateString()
                           : "-"}
                       </td>
-                      <td className="px-6 py-4 text-right space-x-2">
+                      {/* <td className="px-6 py-4 text-right space-x-2">
                         <button className="text-blue-600 hover:underline text-sm">
                           View
                         </button>
                         <button className="text-green-600 hover:underline text-sm">
                           Edit
                         </button>
-                        {/* Add Delete button if needed */}
-                      </td>
+                      </td> */}
                     </tr>
                   ))}
                 </tbody>

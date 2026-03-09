@@ -5,6 +5,7 @@ import {
   DollarSign,
   BarChart2,
 } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 function DashboardPage() {
   const stats = [
@@ -22,6 +23,8 @@ function DashboardPage() {
   ];
 
   return (
+    <ProtectedRoute>
+
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
@@ -88,6 +91,8 @@ function DashboardPage() {
         </div>
       </div>
     </div>
+
+    </ProtectedRoute>
   );
 }
 

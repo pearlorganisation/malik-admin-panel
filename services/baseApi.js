@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { logout } from "@/features/auth/authSlice";
+import { clearUser } from "@/features/auth/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -10,8 +10,13 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
   const result = await baseQuery(args, api, extraOptions);
 
   if (result?.error?.status === 401) {
-    // 🔥 AUTO LOGOUT ON 401
-    api.dispatch(logout());
+    //  Clear redux state
+    api.dispatch(clearUser());
+
+    //  redirect login
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   }
 
   return result;
