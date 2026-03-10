@@ -6,7 +6,11 @@ export const usersApi = baseApi.injectEndpoints({
       query: ({name, email, role}) => `/user?name=${name}&email=${email}&role=${role}`,
       providesTags: ["User"],
     }),
+    getUserById: builder.query({
+      query: (id) => `/user/${id}`,
+      providesTags: ["User"],
+    }),
   }),
 });
 
-export const { useGetUsersQuery } = usersApi;
+export const { useGetUsersQuery, useGetUserByIdQuery } = usersApi;

@@ -1,6 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useGetUsersQuery } from "@/features/users/usersApi"; // Adjust path if needed
+import {
+  useGetUsersQuery,
+  useGetUserByIdQuery,
+} from "@/features/users/usersApi";
 import debounce from "lodash.debounce";
 
 const UserManagementPage = () => {
@@ -8,43 +11,52 @@ const UserManagementPage = () => {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
 
-  // Debounced values to reduce API calls
   const [debouncedName, setDebouncedName] = useState("");
   const [debouncedEmail, setDebouncedEmail] = useState("");
 
-  // Debounce name and email inputs
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Debounce name
   useEffect(() => {
     const handler = debounce((value) => setDebouncedName(value), 500);
     handler(name);
     return () => handler.cancel();
   }, [name]);
 
+  // Debounce email
   useEffect(() => {
     const handler = debounce((value) => setDebouncedEmail(value), 500);
     handler(email);
     return () => handler.cancel();
   }, [email]);
 
-  // useEffect(() => {
-  //   setDebouncedRole(role);
-  // }, [role]);
+  const queryParams = {
+    name: debouncedName || "",
+    email: debouncedEmail || "",
+    role,
+  };
 
-const queryParams = {
-   name: debouncedName || "",
-   email: debouncedEmail || "",
-    role,  
- };
+  const {
+    data: usersResponse,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetUsersQuery(queryParams);
 
- const {
-   data: usersResponse,
-   isLoading,
-   isFetching,
-   error,
- } = useGetUsersQuery(queryParams);
+  const users = usersResponse?.users || [];
 
+  // Fetch single user details
+  const { data: userDetail, isLoading: isUserLoading } =
+    useGetUserByIdQuery(selectedUserId, {
+      skip: !selectedUserId,
+    });
 
-  const users = usersResponse?.users || []; // Adjust if your API returns differently
-console.log("Fetched users:", users);
+  const handleRowClick = (id) => {
+    setSelectedUserId(id);
+    setIsModalOpen(true);
+  };
+
   const handleReset = () => {
     setName("");
     setEmail("");
@@ -54,175 +66,233 @@ console.log("Fetched users:", users);
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-9 w-9 text-blue-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-            />
-          </svg>
+
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
           User Management
         </h1>
 
-        {/* Search Filters */}
+        {/* Filters */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name
-              </label>
-              <input
-                type="text"
-                placeholder="Search by name..."
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="Search by email..."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="px-4 py-2 border rounded-md"
+            />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Role
-              </label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="moderator">Moderator</option>
-                {/* Add more roles as needed */}
-              </select>
-            </div>
+            <input
+              type="email"
+              placeholder="Search by email..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="px-4 py-2 border rounded-md"
+            />
 
-            <div className="flex items-end">
-              <button
-                onClick={handleReset}
-                className="w-full px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition font-medium"
-              >
-                Reset Filters
-              </button>
-            </div>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="px-4 py-2 border rounded-md"
+            >
+              <option value="">All Roles</option>
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+              {/* <option value="MODERATOR">Moderator</option> */}
+            </select>
+
+            <button
+              onClick={handleReset}
+              className="bg-gray-200 rounded-md px-4 py-2"
+            >
+              Reset
+            </button>
+
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Loading */}
         {(isLoading || isFetching) && (
+          <div className="bg-white p-8 rounded-lg shadow">
+            Loading users...
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="text-red-500 text-center">
+            Failed to load users
+          </div>
+        )}
+
+        {/* Empty */}
+        {!isLoading && users.length === 0 && (
+          <div className="text-center py-10 bg-white rounded-lg shadow">
+            No users found
+          </div>
+        )}
+
+        {/* Table */}
+        {!isLoading && users.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-8 space-y-4">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-16 bg-gray-200 rounded animate-pulse"
-                />
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* Error State */}
-        {error && !isLoading && (
-          <div className="text-center py-16 text-red-600 text-lg">
-            Error loading users. Please try again later.
-          </div>
-        )}
+            <table className="w-full text-left text-sm">
 
-        {/* Empty State */}
-        {!isLoading && !error && users.length === 0 && (
-          <div className="text-center py-16 bg-white rounded-lg shadow-md">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-20 w-20 text-gray-400 mx-auto mb-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <p className="text-gray-500 text-lg">
-              No users found matching your criteria.
-            </p>
-          </div>
-        )}
+              <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-4">Name</th>
+                  <th className="px-6 py-4">Email</th>
+                  <th className="px-6 py-4">Role</th>
+                  <th className="px-6 py-4">Created At</th>
+                </tr>
+              </thead>
 
-        {/* Users Table */}
-        {!isLoading && !error && users.length > 0 && (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left text-gray-700">
-                <thead className="text-xs uppercase bg-gray-100 text-gray-600">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Email</th>
-                    <th className="px-6 py-4">Role</th>
-                    <th className="px-6 py-4">Created At</th>
-                    {/* <th className="px-6 py-4 text-right">Actions</th> */}
+              <tbody>
+                {users.map((user) => (
+                  <tr
+                    key={user._id}
+                    onClick={() => handleRowClick(user._id)}
+                    className="border-b hover:bg-blue-50 cursor-pointer transition"
+                  >
+                    <td className="px-6 py-4 font-medium">
+                      {user.name}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {user.email}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs capitalize">
+                        {user.role}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr key={user._id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 font-medium">
-                        {user.name || "-"}
-                      </td>
-                      <td className="px-6 py-4">{user.email}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                          {user.role || "user"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        {user.createdAt
-                          ? new Date(user.createdAt).toLocaleDateString()
-                          : "-"}
-                      </td>
-                      {/* <td className="px-6 py-4 text-right space-x-2">
-                        <button className="text-blue-600 hover:underline text-sm">
-                          View
-                        </button>
-                        <button className="text-green-600 hover:underline text-sm">
-                          Edit
-                        </button>
-                      </td> */}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+
+            </table>
+
+            <div className="px-6 py-4 bg-gray-50 text-sm">
+              Showing {users.length} users
             </div>
 
-            <div className="px-6 py-4 bg-gray-50 text-sm text-gray-600">
-              Showing {users.length} user{users.length !== 1 ? "s" : ""}
+          </div>
+        )}
+
+      </div>
+
+      {/* User Detail Modal */}
+      {isModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl shadow-xl w-full max-w-xl relative">
+
+      {/* Header */}
+      <div className="flex items-center justify-between border-b px-6 py-4">
+        <h2 className="text-lg font-semibold text-gray-800">
+          User Details
+        </h2>
+
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="text-gray-400 hover:text-gray-700 transition"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="p-6">
+
+        {isUserLoading ? (
+          <div className="text-center text-gray-500 py-6">
+            Loading user details...
+          </div>
+        ) : (
+          <div className="space-y-6">
+
+            {/* User Avatar + Name */}
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center text-lg font-semibold text-blue-600">
+                {userDetail?.data?.name?.charAt(0) || "U"}
+              </div>
+
+              <div>
+                <p className="text-lg font-semibold text-gray-800">
+                  {userDetail?.data?.name}
+                </p>
+
+                <p className="text-sm text-gray-500">
+                  {userDetail?.data?.email}
+                </p>
+              </div>
+            </div>
+
+            {/* Info Grid */}
+            <div className="grid grid-cols-2 gap-6 text-sm">
+
+              <div>
+                <p className="text-gray-500">Phone Number</p>
+                <p className="font-medium text-gray-800">
+                  {userDetail?.data?.phoneNumber || "-"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Role</p>
+                <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 capitalize">
+                  {userDetail?.data?.role}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Verified</p>
+                <span
+                  className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                    userDetail?.data?.isVerified
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {userDetail?.data?.isVerified ? "Verified" : "Not Verified"}
+                </span>
+              </div>
+
+              <div>
+                <p className="text-gray-500">Created At</p>
+                <p className="font-medium text-gray-800">
+                  {userDetail?.data?.createdAt
+                    ? new Date(
+                        userDetail.data.createdAt
+                      ).toLocaleDateString()
+                    : "-"}
+                </p>
+              </div>
+
             </div>
           </div>
         )}
+
       </div>
+
+      {/* Footer */}
+      <div className="border-t px-6 py-4 flex justify-end">
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium"
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 };
