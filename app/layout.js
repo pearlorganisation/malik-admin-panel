@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "./LayoutWrapper";
 import { Toaster } from "react-hot-toast";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,9 +23,11 @@ export default function RootLayout({ children }) {
       >
         <Providers>
 
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
+           <ProtectedRoute>
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
+          </ProtectedRoute>
 
           <Toaster
             position="top-right"
