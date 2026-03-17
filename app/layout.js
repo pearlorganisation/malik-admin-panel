@@ -4,6 +4,7 @@ import "./globals.css";
 import LayoutWrapper from "./LayoutWrapper";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AuthInitializer from "./AuthInitializer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +24,16 @@ export default function RootLayout({ children }) {
       >
         <Providers>
 
-           <ProtectedRoute>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-          </ProtectedRoute>
+          {/* ⭐ Restore user on refresh */}
+          <AuthInitializer>
+
+            <ProtectedRoute>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </ProtectedRoute>
+
+          </AuthInitializer>
 
           <Toaster
             position="top-right"

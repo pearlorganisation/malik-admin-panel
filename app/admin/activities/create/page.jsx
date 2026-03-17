@@ -80,8 +80,6 @@ export default function CreateActivityPage() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    // Fetch categories from backend or define them statically
-      console.log("Fetched categories data:", categoriesData?.data);
     if (categoriesData && categoriesData?.data) {
       setCategories(categoriesData.data);
     }
@@ -137,7 +135,6 @@ export default function CreateActivityPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.title.trim()) {
       alert("Please enter an activity title.");
       setActiveTab("basic");
@@ -146,7 +143,6 @@ export default function CreateActivityPage() {
 
     try {
       const payload = buildFormDataPayload();
-
       // Important: Pass the FormData directly — RTK Query will set correct headers
       await createActivity(payload).unwrap();
 

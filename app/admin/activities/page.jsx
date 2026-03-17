@@ -31,6 +31,7 @@ export default function ActivitiesPage() {
     a.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log("testing data", filteredActivities)
   // Pagination Handlers
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -145,34 +146,82 @@ export default function ActivitiesPage() {
                           </td>
 
                           {/* Location */}
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          {/* <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center text-sm text-gray-600">
                               <svg className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                               {activity.placeId?.name || 'Unknown Location'}
                             </div>
-                          </td>
+                          </td> */}
+
+                          <td className="px-6 py-4">
+  <div className="flex items-start text-sm text-gray-600">
+    {/* Icon */}
+    <svg 
+      className="flex-shrink-0 mt-0.5 mr-2 h-4 w-4 text-gray-400" 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+    </svg>
+
+    {/* Text Container */}
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+      <span className="font-medium text-gray-900">
+        {activity.placeId?.name || 'N/A'}
+      </span>
+      
+      {activity.placeId?.region && (
+        <>
+          <span className="hidden sm:inline text-gray-300">|</span> 
+          <span className="text-gray-500 text-xs sm:text-sm italic">
+            {activity.placeId.region}
+          </span>
+        </>
+      )}
+    </div>
+  </div>
+</td>
 
                           {/* Packages Count */}
                           <td className="px-6 py-4 whitespace-nowrap text-center">
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                              {activity.packages?.length || 0} Packages
+                              {activity.packageCount || 0} Packages
                             </span>
                           </td>
 
                           {/* Status Toggle */}
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
-                            <button
-                              onClick={() => handleToggleStatus(activity._id)}
-                              className={`relative inline-flex items-center px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                                activity.isActive 
-                                  ? 'bg-green-100 text-green-800 hover:bg-green-200 focus:ring-green-500' 
-                                  : 'bg-red-100 text-red-800 hover:bg-red-200 focus:ring-red-500'
-                              }`}
-                            >
-                              <span className={`w-1.5 h-1.5 mr-1.5 rounded-full ${activity.isActive ? 'bg-green-600' : 'bg-red-600'}`}></span>
-                              {activity.isActive ? 'Active' : 'Inactive'}
-                            </button>
-                          </td>
+                         <td className="px-6 py-4 whitespace-nowrap text-center">
+  <div className="relative inline-block text-left">
+    <select
+      value={activity.isActive ? "active" : "inactive"}
+      onChange={() => handleToggleStatus(activity._id)}
+      className={`appearance-none pl-8 pr-10 py-1.5 rounded-full text-xs font-semibold cursor-pointer transition-all border-none focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+        activity.isActive
+          ? 'bg-green-100 text-green-800 focus:ring-green-500 hover:bg-green-200'
+          : 'bg-red-100 text-red-800 focus:ring-red-500 hover:bg-red-200'
+      }`}
+    >
+      {/* Agar Active hai to 'Active' selected rahega, aur 'Disable' ka option aayega */}
+      <option value="active" disabled={activity.isActive}>
+        {activity.isActive ? '● Active' : 'Enable Activity'}
+      </option>
+      
+      {/* Agar Inactive hai to 'Inactive' selected rahega, aur 'Enable' ka option aayega */}
+      <option value="inactive" disabled={!activity.isActive}>
+        {!activity.isActive ? '● Inactive' : 'Disable Activity'}
+      </option>
+    </select>
+
+    {/* Custom Dropdown Arrow Icon (Optional but looks better) */}
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-current opacity-60">
+      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </div>
+  </div>
+</td>
 
                           {/* Actions */}
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

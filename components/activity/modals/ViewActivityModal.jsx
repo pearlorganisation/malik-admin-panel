@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import AddPackageModal from './AddPackageModal';
 import ViewPackageModal from './ViewPackageModal';
+import { useGetPackagesByActivityQuery } from '@/features/activity/activityApi';
 
 export default function ViewActivityModal({
   activity,
@@ -29,6 +30,14 @@ const [showViewPackage, setShowViewPackage] = useState(false);
 
   if (!activity) return null;
 
+  const { data: packagesData, isLoading } =
+  useGetPackagesByActivityQuery(activity._id, {
+    skip: activeTab !== "packages",
+  });
+
+const packages = packagesData?.data || [];
+
+console.log("pak",packages)
   const formatDate = (date) => {
     if (!date) return '—';
     try {
@@ -339,9 +348,9 @@ const [showViewPackage, setShowViewPackage] = useState(false);
             )}
 
             {/* ================= PACKAGES ================= */}
-            {activeTab === 'packages' && (
+            {/* {activeTab === 'packages' && (
               <SectionCard
-                title={`Packages (${activity.packages?.length || 0})`}
+                title={`Packages (${activity.packageCount || 0})`}
                 icon={Layers}
                 action={
                   <button
@@ -366,7 +375,38 @@ const [showViewPackage, setShowViewPackage] = useState(false);
                   <EmptyState message="No packages yet." />
                 )}
               </SectionCard>
-            )}
+            )} */}
+
+            {activeTab === 'packages' && (
+  <SectionCard
+    title={`Packages (${packages.length})`}
+    icon={Layers}
+    action={
+      <button
+        onClick={() => setShowAddPackage(true)}
+        className="px-3 py-1.5 bg-green-600 text-white text-xs font-semibold rounded-lg hover:bg-green-700 transition"
+      >
+        + Add Package
+      </button>
+    }
+  >
+    {isLoading ? (
+      <p className="text-sm text-gray-500">Loading packages...</p>
+    ) : packages.length ? (
+      <div className="grid md:grid-cols-2 gap-4">
+        {packages.map((pkg) => (
+          <PackageCard
+            key={pkg._id}
+            pkg={pkg}
+            onClick={() => handleViewPackage(pkg)}
+          />
+        ))}
+      </div>
+    ) : (
+      <EmptyState message="No packages yet." />
+    )}
+  </SectionCard>
+)}
           </div>
         </div>
       </div>
@@ -471,15 +511,90 @@ const ItineraryCard = ({ item }) => (
 const PackageCard = ({ pkg, onClick }) => (
   <div
     onClick={onClick}
-    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-blue-300 hover:shadow-md transition cursor-pointer"
+    className="group bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-200 cursor-pointer"
   >
-    <div className="flex justify-between mb-2">
-      <p className="font-bold">{pkg.name}</p>
-      <p className="font-bold text-blue-600">AED {pkg.price}</p>
+    {/* HEADER */}
+    <div className="flex items-start justify-between mb-3">
+      <div>
+        <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition">
+          {pkg.name}
+        </h4>
+
+        <span
+          className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${
+            pkg.isActive
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-red-50 text-red-500"
+          }`}
+        >
+          {pkg.isActive ? "Active" : "Inactive"}
+        </span>
+      </div>
+
+      <div className="text-right">
+        <p className="text-xs text-gray-400">Price</p>
+        <p className="text-lg font-bold text-blue-600">AED {pkg.price}</p>
+      </div>
     </div>
 
+    {/* DESCRIPTION */}
     {pkg.description && (
-      <p className="text-sm text-gray-600">{pkg.description}</p>
+      <p className="text-sm text-gray-500 line-clamp-2 mb-3">
+        {pkg.description}
+      </p>
+    )}
+
+    {/* INCLUDE / EXCLUDE */}
+    <div className="grid grid-cols-2 gap-3 text-xs mb-3">
+      <div>
+        <p className="font-semibold text-gray-600 mb-1">Includes</p>
+        <ul className="space-y-1 text-gray-500">
+          {pkg.whatInclude?.slice(0, 2).map((i, idx) => (
+            <li key={idx} className="flex items-center gap-1">
+              <CheckCircle className="w-3 h-3 text-emerald-500" />
+              {i}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <p className="font-semibold text-gray-600 mb-1">Excludes</p>
+        <ul className="space-y-1 text-gray-500">
+          {pkg.whatExclude?.slice(0, 2).map((i, idx) => (
+            <li key={idx} className="flex items-center gap-1">
+              <X className="w-3 h-3 text-red-400" />
+              {i}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    {/* BOOKING FIELDS */}
+    {pkg.bookingFields?.length > 0 && (
+      <div className="border-t pt-3 mt-2">
+        <p className="text-xs font-semibold text-gray-600 mb-1">
+          Booking Options
+        </p>
+
+        <div className="flex flex-wrap gap-1">
+          {pkg.bookingFields.slice(0, 3).map((f, i) => (
+            <span
+              key={i}
+              className="text-[11px] px-2 py-1 bg-gray-100 rounded-md text-gray-600"
+            >
+              {f.name}
+            </span>
+          ))}
+
+          {pkg.bookingFields.length > 3 && (
+            <span className="text-[11px] text-gray-400">
+              +{pkg.bookingFields.length - 3} more
+            </span>
+          )}
+        </div>
+      </div>
     )}
   </div>
 );

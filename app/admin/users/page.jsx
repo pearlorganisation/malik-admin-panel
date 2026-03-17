@@ -63,6 +63,8 @@ const UserManagementPage = () => {
     setRole("");
   };
 
+  console.log("first",userDetail)
+console.log("selectedUserId", selectedUserId);
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -209,7 +211,7 @@ const UserManagementPage = () => {
       {/* Body */}
       <div className="p-6">
 
-        {isUserLoading ? (
+        {isUserLoading || !userDetail ? (
           <div className="text-center text-gray-500 py-6">
             Loading user details...
           </div>
@@ -219,16 +221,16 @@ const UserManagementPage = () => {
             {/* User Avatar + Name */}
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center text-lg font-semibold text-blue-600">
-                {userDetail?.data?.name?.charAt(0) || "U"}
+                {userDetail?.name?.charAt(0) || "U"}
               </div>
 
               <div>
                 <p className="text-lg font-semibold text-gray-800">
-                  {userDetail?.data?.name}
+                  {userDetail?.name}
                 </p>
 
                 <p className="text-sm text-gray-500">
-                  {userDetail?.data?.email}
+                  {userDetail?.email}
                 </p>
               </div>
             </div>
@@ -239,14 +241,14 @@ const UserManagementPage = () => {
               <div>
                 <p className="text-gray-500">Phone Number</p>
                 <p className="font-medium text-gray-800">
-                  {userDetail?.data?.phoneNumber || "-"}
+                  {userDetail?.phoneNumber || "-"}
                 </p>
               </div>
 
               <div>
                 <p className="text-gray-500">Role</p>
                 <span className="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 capitalize">
-                  {userDetail?.data?.role}
+                  {userDetail?.role}
                 </span>
               </div>
 
@@ -254,21 +256,21 @@ const UserManagementPage = () => {
                 <p className="text-gray-500">Verified</p>
                 <span
                   className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                    userDetail?.data?.isVerified
+                    userDetail?.isVerified
                       ? "bg-green-100 text-green-700"
                       : "bg-red-100 text-red-700"
                   }`}
                 >
-                  {userDetail?.data?.isVerified ? "Verified" : "Not Verified"}
+                  {userDetail?.isVerified ? "Verified" : "Not Verified"}
                 </span>
               </div>
 
               <div>
                 <p className="text-gray-500">Created At</p>
                 <p className="font-medium text-gray-800">
-                  {userDetail?.data?.createdAt
+                  {userDetail?.createdAt
                     ? new Date(
-                        userDetail.data.createdAt
+                        userDetail?.createdAt
                       ).toLocaleDateString()
                     : "-"}
                 </p>

@@ -7,13 +7,15 @@ const baseQuery = fetchBaseQuery({
 });
 
 const baseQueryWithAuth = async (args, api, extraOptions) => {
+
   const result = await baseQuery(args, api, extraOptions);
 
-  if (result?.error?.status === 401) {
-    //  Clear redux state
+  const isLoginRequest =
+    typeof args === "object" && args.url?.includes("/auth/login");
+
+  if (result?.error?.status === 401 && !isLoginRequest) {
     api.dispatch(clearUser());
 
-    //  redirect login
     if (typeof window !== "undefined") {
       window.location.href = "/login";
     }
@@ -21,10 +23,9 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
 
   return result;
 };
-
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithAuth,
-  tagTypes: ["Auth", "User", "Activity", "Categories", "Places", "Spots"],
+  tagTypes: ["Auth", "User", "Activity","Package", "Categories", "Places", "Spots","Contacts"],
   endpoints: () => ({}),
 });

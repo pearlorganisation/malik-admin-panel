@@ -151,11 +151,24 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
       if (onSuccess) onSuccess();
       if (onClose) onClose();
     } catch (err) {
-      console.error(err);
-      setErrors({
-        submit: err?.data?.message || err?.message || 'Failed to create package',
-      });
-    }
+  console.error(err);
+
+  const backendErrors = err?.data?.errors;
+
+  if (backendErrors && Array.isArray(backendErrors)) {
+    const formattedErrors = {};
+
+    backendErrors.forEach((e) => {
+      formattedErrors[e.path] = e.msg;
+    });
+
+    setErrors(formattedErrors);
+  } else {
+    setErrors({
+      submit: err?.data?.message || err?.message || "Failed to create package",
+    });
+  }
+}
   };
 
   // ================= RENDER HELPERS =================
@@ -221,6 +234,7 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
 
         {/* SCROLLABLE FORM AREA */}
         <form
+         id="create-package-form"
           onSubmit={handleSubmit}
           className="flex-1 overflow-y-auto scrollbar-hide p-6 space-y-6"
         >
@@ -413,6 +427,7 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
           </button>
           <button
               type="submit"
+              form="create-package-form"
             disabled={isLoading}
             className="px-6 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 disabled:opacity-70 disabled:cursor-not-allowed shadow-sm transition-all flex items-center gap-2"
           >

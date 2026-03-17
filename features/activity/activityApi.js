@@ -1,6 +1,7 @@
 import { baseApi } from '@/services/baseApi';
 
 export const activityApi = baseApi.injectEndpoints({
+  overrideExisting: false,
   endpoints: (builder) => ({
     /* ================= SEARCH ================= */
     searchActivities: builder.query({
@@ -77,6 +78,28 @@ export const activityApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Activity', 'Package'],
     }),
+/* ================= GET ALL PACKAGES ================= */
+getAllPackages: builder.query({
+  query: ({ page = 1, limit = 50 } = {}) =>
+    `/activity/packages?page=${page}&limit=${limit}`,
+  providesTags: ['Package'],
+}),
+// use in frontend const { data } = useGetAllPackagesQuery();
+
+/* ================= GET PACKAGES BY ACTIVITY ================= */
+getPackagesByActivity: builder.query({
+  query: (activityId) => `/activity/packages/${activityId}`,
+  providesTags: ['Package'],
+}),
+// use in frontend const { data, isLoading } = useGetPackagesByActivityQuery(activityId);
+/* ================= GET PACKAGE BY ID ================= */
+getPackageById: builder.query({
+  query: (id) => `/activity/package/${id}`,
+  providesTags: (result, error, id) => [{ type: 'Package', id }],
+}),
+
+
+// use in frontend const const { data } = useGetPackageByIdQuery(packageId);
 
     /* ================= UPDATE PACKAGE ================= */
     updatePackage: builder.mutation({
@@ -100,4 +123,7 @@ export const {
   useToggleActivityStatusMutation,
   useCreatePackageMutation,
   useUpdatePackageMutation,
+  useGetPackagesByActivityQuery,
+  useGetAllPackagesQuery,
+  useGetPackageByIdQuery
 } = activityApi;
