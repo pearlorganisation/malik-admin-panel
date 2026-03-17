@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useGetActivitiesQuery, useDeleteActivityMutation, useToggleActivityStatusMutation } from '@/features/activity/activityApi';
 import ViewActivityModal from '@/components/activity/modals/ViewActivityModal';
-import EditActivityModal from '@/components/activity/modals/EditActivityModal';
+// import EditActivityModal from '@/components/activity/modals/EditActivityModal';
 import ConfirmDeleteModal from '@/components/activity/modals/ConfirmDeleteModal';
+import EditActivityModalNew from '@/components/activity/modals/EditActivityModalNew';
 
 export default function ActivitiesPage() {
   // Pagination State
@@ -25,11 +26,15 @@ export default function ActivitiesPage() {
 
   // Extract Data & Pagination Info
   const activities = response?.data?.data || [];
+  console.log("FULL RESPONSE:", response);
   const pagination = response?.data?.pagination || { total: 0, page: 1, totalPages: 1 };
   
+  // const filteredActivities = activities.filter(a =>
+  //   a.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
   const filteredActivities = activities.filter(a =>
-    a.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  (a?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   console.log("testing data", filteredActivities)
   // Pagination Handlers
@@ -139,7 +144,7 @@ export default function ActivitiesPage() {
                                 )}
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-semibold text-gray-900">{activity.name}</div>
+                                <div className="text-sm font-semibold text-gray-900">{activity?.name || ""}</div>
                                 <div className="text-xs text-gray-500 mt-0.5">{activity.categoryId?.name || activity.categoryId || 'Uncategorized'}</div>
                               </div>
                             </div>
@@ -233,13 +238,13 @@ export default function ActivitiesPage() {
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                               </button>
-                              {/* <button
+                              <button
                                 onClick={() => setEditModal({ open: true, activity })}
                                 className="text-gray-400 hover:text-amber-600 transition-colors"
                                 title="Edit Activity"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                              </button> */}
+                              </button>
                               <button
                                 onClick={() => setDeleteModal({ open: true, id: activity._id })}
                                 className="text-gray-400 hover:text-red-600 transition-colors"
@@ -377,10 +382,13 @@ export default function ActivitiesPage() {
       )}
 
       {/* Edit Modal */}
-      {editModal.open && (
+      {/* {editModal.open  && editModal.activity && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
            <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onClick={() => setEditModal({ open: false, activity: null })}></div>
+            <div className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onClick={() =>{
+               setEditModal({ open: false, activity: null })
+               
+               }}></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
             <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
                <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-gray-50">
@@ -405,7 +413,19 @@ export default function ActivitiesPage() {
             </div>
           </div>
         </div>
-      )}
+      )} */}
+
+     {editModal.open && editModal.activity && (
+  <EditActivityModalNew
+    activity={editModal.activity}
+    onClose={() => setEditModal({ open: false, activity: null })}
+    onSuccess={() => {
+      setEditModal({ open: false, activity: null });
+      refetch();
+    }}
+  />
+)}
+
 
       {/* Delete Modal */}
       <ConfirmDeleteModal

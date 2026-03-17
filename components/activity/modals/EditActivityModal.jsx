@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUpdateActivityMutation } from '@/features/activity/activityApi';
 
 export default function EditActivityModal({ activity, onClose, onSuccess }) {
+  if (!activity) return null;
   const [updateActivity, { isLoading }] = useUpdateActivityMutation();
   const [formData, setFormData] = useState({
     name: activity?.name || '',
@@ -12,6 +13,16 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
     isActive: activity?.isActive ?? true,
   });
   const [errors, setErrors] = useState({});
+  useEffect(() => {
+  if (activity) {
+    setFormData({
+      name: activity?.name || '',
+      categoryId: activity?.categoryId?._id || activity?.categoryId || '',
+      placeId: activity?.placeId?._id || activity?.placeId || '',
+      isActive: activity?.isActive ?? true,
+    });
+  }
+}, [activity]);
   const [categories] = useState([
     { id: '6954df3dbe9967f0401688b7', name: 'Adventure' },
     { id: '6954df3dbe9967f0401688b8', name: 'Beach' },
@@ -45,12 +56,16 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
-      formDataToSend.append('isActive', formData.isActive);
+      // formDataToSend.append('isActive', formData.isActive);
+      formDataToSend.append('isActive', String(formData.isActive));
 
-      await updateActivity({ id: activity._id, formData: formDataToSend }).unwrap();
+      // await updateActivity({ id: activity._id, formData: formDataToSend }).unwrap();
+      await updateActivity({ id: activity._id, data: formDataToSend }).unwrap();
       onSuccess?.();
     } catch (error) {
-      setErrors({ submit: error?.data?.message || 'Failed to update activity' });
+      // setErrors({ submit: error?.data?.message || 'Failed to update activity' });
+      console.error("UPDATE ERROR:", error); // 🔥 add this
+  setErrors({ submit: error?.data?.message || 'Failed to update activity' });
     }
   };
 
