@@ -22,6 +22,7 @@ export default function CreateActivityForm() {
     name: '',
     categoryId: '',
     placeId: '',
+    timeSlots: [],
     Experience: {
       title: '',
       note: '',
@@ -95,6 +96,10 @@ export default function CreateActivityForm() {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
+      formDataToSend.append(
+        "timeSlots",
+        JSON.stringify(formData.timeSlots)
+      );
       formDataToSend.append('isActive', formData.isActive);
 
       formDataToSend.append('Experience', JSON.stringify(formData.Experience));

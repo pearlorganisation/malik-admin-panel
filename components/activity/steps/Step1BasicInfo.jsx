@@ -33,6 +33,30 @@ export default function Step1BasicInfo({ formData, onFormDataChange, onNext }) {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: '' }));
   };
 
+  const addTimeSlot = () => {
+  const updated = [...(formData.timeSlots || []), ""];
+  onFormDataChange({ ...formData, timeSlots: updated });
+};
+
+const updateTimeSlot = (index, value) => {
+  const updated = [...formData.timeSlots];
+
+  // convert 24h → AM/PM
+  const [hour, minute] = value.split(":");
+  const h = parseInt(hour);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const formattedHour = ((h + 11) % 12 + 1).toString().padStart(2, "0");
+
+  updated[index] = `${formattedHour}:${minute} ${ampm}`;
+
+  onFormDataChange({ ...formData, timeSlots: updated });
+};
+
+const removeTimeSlot = (index) => {
+  const updated = formData.timeSlots.filter((_, i) => i !== index);
+  onFormDataChange({ ...formData, timeSlots: updated });
+};
+
   return (
     <div className="space-y-6 animate-fadeIn">
       <div>
@@ -111,6 +135,45 @@ export default function Step1BasicInfo({ formData, onFormDataChange, onNext }) {
           <p className="text-gray-500 text-xs">Select the location</p>
         </div>
       </div>
+
+      {/* Time Slots */}
+<div className="space-y-3">
+  <label className="block text-sm font-semibold text-gray-700">
+    Activity Time Slots
+  </label>
+
+  {(formData.timeSlots || []).map((slot, index) => (
+    <div key={index} className="flex gap-3 items-center">
+      <input
+        type="time"
+        onChange={(e) => updateTimeSlot(index, e.target.value)}
+        className="px-4 py-2 border border-gray-300 rounded-lg"
+      />
+
+      <span className="text-sm text-gray-600">{slot}</span>
+
+      <button
+        type="button"
+        onClick={() => removeTimeSlot(index)}
+        className="text-red-500 text-sm"
+      >
+        Remove
+      </button>
+    </div>
+  ))}
+
+  <button
+    type="button"
+    onClick={addTimeSlot}
+    className="px-4 py-2 bg-blue-500 text-white text-sm rounded-lg"
+  >
+    + Add Time Slot
+  </button>
+
+  <p className="text-xs text-gray-500">
+    Add available time slots for this activity
+  </p>
+</div>
 
       {/* Active Status */}
       <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
