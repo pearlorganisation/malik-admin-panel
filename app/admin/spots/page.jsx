@@ -6,6 +6,7 @@ import {
   useUpdateSpotMutation,
   useDeleteSpotMutation,
 } from "@/features/spot/spotApi";
+import { useGetCategoriesQuery } from "@/features/category/categoryApi";
 
 const CATEGORY_OPTIONS = [
   "Shopping & Malls",
@@ -23,6 +24,11 @@ export default function ManageSpots() {
   const [deleteSpot] = useDeleteSpotMutation();
 
   const [editingSpot, setEditingSpot] = useState(null);
+
+  const { data: categoryResponse, isLoading: categoryLoading } =
+  useGetCategoriesQuery({ page: 1, limit: 100 });
+
+const categories = categoryResponse?.data || [];
 
   const initialForm = {
     title: "",
@@ -144,7 +150,7 @@ export default function ManageSpots() {
     setEditingSpot(spot);
     setForm({
       title: spot.title || "",
-      category: spot.category ,
+      category: spot.category?._id || spot.category,
       location: spot.location || "",
       overview: spot.overview || "",
       image: null,
@@ -226,19 +232,25 @@ export default function ManageSpots() {
                 />
 
                 {/* Category Dropdown */}
-                <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                >
-                  {CATEGORY_OPTIONS.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+              <select
+  name="category"
+  value={form.category}
+  onChange={handleChange}
+  className="input-field"
+  required
+>
+  <option value="">Select Category</option>
+
+  {categoryLoading ? (
+    <option>Loading categories...</option>
+  ) : (
+    categories.map((cat) => (
+      <option key={cat._id} value={cat._id}>
+        {cat.name}
+      </option>
+    ))
+  )}
+</select>
 
                 <input
                   type="text"
@@ -492,7 +504,7 @@ export default function ManageSpots() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {spot.category}
+                          {spot.category?.name || "N/A"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
