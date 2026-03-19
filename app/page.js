@@ -47,7 +47,7 @@ function DashboardPage() {
 
   return (
     <ProtectedRoute>
-      <div className="relative min-h-screen p-8 bg-gradient-to-br from-slate-50 via-blue-50 to-purple-100">
+      <div className="relative min-h-screen p-8 bg-linear-to-br from-slate-50 via-blue-50 to-purple-100">
 
         {/* background glow */}
         <div className="absolute top-0 left-0 w-96 h-96 bg-purple-400 opacity-20 blur-3xl rounded-full"></div>
@@ -55,7 +55,7 @@ function DashboardPage() {
 
         {/* header */}
         <div className="mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold bg-linear-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
             Admin Dashboard
           </h1>
           <p className="text-gray-500 mt-1">
@@ -75,7 +75,7 @@ function DashboardPage() {
               className="relative rounded-2xl p-6 backdrop-blur-lg bg-white/60 shadow-xl border border-white/40"
             >
               <div
-                className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${stat.color} opacity-10`}
+                className={`absolute inset-0 rounded-2xl bg-linear-to-r ${stat.color} opacity-10`}
               ></div>
 
               <div className="flex items-center justify-between relative">
@@ -85,7 +85,7 @@ function DashboardPage() {
                 </div>
 
                 <div
-                  className={`p-3 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg`}
+                  className={`p-3 rounded-xl bg-linear-to-r ${stat.color} shadow-lg`}
                 >
                   {stat.icon}
                 </div>

@@ -76,7 +76,7 @@ export default function Sidebar() {
       <aside
         className={clsx(
           "fixed top-0 left-0 h-screen w-64 text-white z-50 flex flex-col transition-transform duration-300",
-          "bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-white/10 backdrop-blur-xl",
+          "bg-linear-to-b from-slate-900 via-slate-800 to-slate-900 border-r border-white/10 backdrop-blur-xl",
           "shadow-2xl",
           "lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -89,7 +89,7 @@ export default function Sidebar() {
         {/* HEADER */}
         <div className="flex items-center justify-between p-5 border-b border-white/10">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
+            <div className="p-2 rounded-lg bg-linear-to-r from-blue-500 to-indigo-600 shadow-lg">
               <Settings className="w-6 h-6" />
             </div>
             <h2 className="text-xl font-bold hidden lg:block">
@@ -125,7 +125,7 @@ export default function Sidebar() {
                     className={clsx(
                       "group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 relative overflow-hidden",
                       isActive
-                        ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
+                        ? "bg-linear-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
                         : "text-slate-300 hover:bg-white/10 hover:text-white"
                     )}
                   >
@@ -134,7 +134,7 @@ export default function Sidebar() {
 
                     {/* glow effect */}
                     {!isActive && (
-                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-r from-blue-500/10 to-purple-500/10 transition" />
+                      <span className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-linear-to-r from-blue-500/10 to-purple-500/10 transition" />
                     )}
                   </Link>
                 </motion.li>

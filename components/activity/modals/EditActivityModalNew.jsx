@@ -391,9 +391,9 @@ onClose();
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col h-[90vh]">
         
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-linear-to-r from-gray-50 to-gray-100">
           <div>
-            <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+            <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-indigo-600 to-purple-600">
               Edit Activity
             </h2>
             <p className="text-sm text-gray-500 mt-1">Update details for {formData.name || 'this activity'}</p>
@@ -606,7 +606,7 @@ onChange={(e) =>
 className={`px-8 py-2.5 font-bold text-white rounded-xl ${
   isLoading
     ? "bg-gray-400 cursor-not-allowed"
-    : "bg-gradient-to-r from-indigo-600 to-purple-600"
+    : "bg-linear-to-r from-indigo-600 to-purple-600"
 }`}
  >
   {isLoading ? "Saving..." : "Save Changes"}

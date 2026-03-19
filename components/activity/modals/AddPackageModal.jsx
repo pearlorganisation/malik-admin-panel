@@ -176,7 +176,7 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
   const renderListInput = (field, label, Icon) => (
     <div className="space-y-2">
       <div className="flex justify-between items-center">
-        <label className="block text-sm font-medium text-gray-700 flex items-center gap-1">
+        <label className=" text-sm font-medium text-gray-700 flex items-center gap-1">
           <Icon size={16} /> {label}
         </label>
         <button
@@ -218,7 +218,7 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
        onClick={(e) => e.stopPropagation()}>
         
         {/* HEADER */}
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 flex justify-between items-center shrink-0">
+        <div className="bg-linear-to-r from-emerald-600 to-teal-600 px-6 py-4 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-2 text-white">
             <PackageIcon className="w-6 h-6" />
             <h2 className="text-xl font-bold">Create Activity Package</h2>

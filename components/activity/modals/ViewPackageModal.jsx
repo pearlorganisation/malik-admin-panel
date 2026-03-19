@@ -27,7 +27,7 @@ export default function ViewPackageModal({ package: pkg, isOpen, onClose }) {
       <div className="relative w-full max-w-3xl max-h-[92vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         
         {/* ================= HEADER ================= */}
-        <div className="flex items-start justify-between p-4 border-b bg-gradient-to-r from-slate-600 to-slate-600 text-white">
+        <div className="flex items-start justify-between p-4 border-b bg-linear-to-r from-slate-600 to-slate-600 text-white">
           <div>
             <h2 className="text-2xl font-bold">{pkg.name}</h2>
             <p className="text-emerald-100 mt-1 text-sm">

@@ -120,7 +120,7 @@ export default function PackageManager({ activityId, packages = [] }) {
           <p className="text-center text-gray-500 py-8">No packages yet. Create your first package!</p>
         ) : (
           packages.map((pkg) => (
-            <div key={pkg._id} className="border border-gray-200 rounded-lg p-4 bg-gradient-to-r from-gray-50 to-gray-100">
+            <div key={pkg._id} className="border border-gray-200 rounded-lg p-4 bg-linear-to-r from-gray-50 to-gray-100">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <h4 className="font-bold text-gray-900">{pkg.name}</h4>
