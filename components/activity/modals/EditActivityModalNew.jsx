@@ -379,23 +379,17 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
   const activeIndex = STEPS.findIndex(s => s.key === activeTab);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-gray-900/70 backdrop-blur-sm">
-      <div
-        className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col"
-        style={{ height: 'min(92vh, 760px)' }}
-      >
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-white font-bold text-lg shadow-md shadow-amber-200">
-              ✏️
-            </div>
-            <div>
-              <h2 className="text-lg font-extrabold text-gray-900 leading-tight">Edit Activity</h2>
-              <p className="text-xs text-gray-400 font-medium truncate max-w-xs">
-                {formData.name || 'Unnamed Activity'}
-              </p>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm transition-opacity">
+      {/* <div className="bg-white w-full max-w-4xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col max-h-[90vh] overflow-hidden"> */}
+      <div className="bg-white w-full max-w-4xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex flex-col h-[90vh]">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+          <div>
+            <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">
+              Edit Activity
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">Update details for {formData.name || 'this activity'}</p>
           </div>
           <button
             onClick={onClose}
@@ -821,56 +815,17 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
           >
             ← Back
           </button>
-
-          {/* Progress dots */}
-          <div className="flex items-center gap-1.5">
-            {STEPS.map((s, i) => (
-              <button
-                key={s.key}
-                onClick={() => setActiveTab(s.key)}
-                className={`rounded-full transition-all duration-200 ${
-                  i === activeIndex ? 'w-5 h-2 bg-amber-500' : i < activeIndex ? 'w-2 h-2 bg-emerald-400' : 'w-2 h-2 bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Next / Save */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              Cancel
-            </button>
-            {activeIndex < STEPS.length - 1 ? (
-              <button
-                type="button"
-                onClick={goNext}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg shadow-sm shadow-amber-200 transition-all"
-              >
-                Next →
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isLoading}
-                className={`flex items-center gap-2 px-6 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-all
-                  ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'}`}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="inline-block w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                    Saving…
-                  </>
-                ) : (
-                  <>✓ Save Changes</>
-                )}
-              </button>
-            )}
-          </div>
+  <button
+  onClick={handleSubmit}
+  disabled={isLoading}
+className={`px-8 py-2.5 font-bold text-white rounded-xl ${
+  isLoading
+    ? "bg-gray-400 cursor-not-allowed"
+    : "bg-gradient-to-r from-indigo-600 to-purple-600"
+}`}
+ >
+  {isLoading ? "Saving..." : "Save Changes"}
+</button>
         </div>
       </div>
     </div>

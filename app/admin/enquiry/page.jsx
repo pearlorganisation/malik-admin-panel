@@ -149,14 +149,14 @@ export default function ContactsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
-                        <span className="text-gray-900 break-words">{item.email}</span>
+                        <span className="text-gray-900 wrap-break-word">{item.email}</span>
                         <span className="text-xs text-gray-500">
                           {item.phone}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="max-w-[200px] truncate text-gray-500 break-words">
+                      <p className="max-w-50 truncate text-gray-500 wrap-break-word">
                         {item.message}
                       </p>
                     </td>

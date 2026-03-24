@@ -195,10 +195,10 @@ const categories = categoryResponse?.data || [];
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+          <h1 className="text-4xl font-extrabold text-gray-900 bg-clip-text bg-linear-to-r from-blue-600 to-purple-600">
             Manage Travel Spots
           </h1>
           <p className="mt-3 text-lg text-gray-600">
@@ -208,7 +208,7 @@ const categories = categoryResponse?.data || [];
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-12">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-5">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 px-8 py-5">
             <h2 className="text-2xl font-bold text-white">
               {editingSpot ? "Edit Spot" : "Add New Spot"}
             </h2>
@@ -430,7 +430,7 @@ const categories = categoryResponse?.data || [];
             <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-200">
               <button
                 type="submit"
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition"
+                className="px-8 py-3 bg-linear-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition"
               >
                 {editingSpot ? "Update Spot" : "Create Spot"}
               </button>
@@ -449,7 +449,7 @@ const categories = categoryResponse?.data || [];
 
         {/* Spots List */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-5">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 px-8 py-5">
             <h2 className="text-2xl font-bold text-white">
               All Spots ({spots.length})
             </h2>

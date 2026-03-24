@@ -17,7 +17,7 @@ export default function Step8ReviewSubmit({ formData, onSubmit, isLoading, onPre
   const ReviewItem = ({ label, value }) => (
     <div className="flex justify-between gap-4">
       <span className="font-semibold text-gray-600 min-w-fit">{label}:</span>
-      <span className="text-right break-words">{value || 'Not provided'}</span>
+      <span className="text-right wrap-break-word">{value || 'Not provided'}</span>
     </div>
   );
 
@@ -163,7 +163,7 @@ export default function Step8ReviewSubmit({ formData, onSubmit, isLoading, onPre
         <button
           onClick={onSubmit}
           disabled={!canSubmit}
-          className="px-8 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-8 py-3 bg-linear-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isLoading ? '⏳ Submitting...' : '✅ Submit Activity'}
         </button>

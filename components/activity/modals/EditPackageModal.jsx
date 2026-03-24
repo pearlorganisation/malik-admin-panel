@@ -73,7 +73,7 @@ export default function EditPackageModal({ package: pkg, isOpen, onClose, onSave
         </button>
 
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6">
+        <div className="bg-linear-to-r from-green-500 to-emerald-600 text-white p-6">
           <h2 className="text-2xl font-bold">Edit Package</h2>
           <p className="text-green-100 text-sm mt-1">{pkg?.name}</p>
         </div>
@@ -206,7 +206,7 @@ export default function EditPackageModal({ package: pkg, isOpen, onClose, onSave
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition font-medium disabled:opacity-50"
+            className="px-4 py-2 bg-linear-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:shadow-lg transition font-medium disabled:opacity-50"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </button>
