@@ -29,7 +29,8 @@ const menuItems = [
   { href: "/activities/create", label: "Create Activity", icon: BarChart3 },
   { href: "/admin/places", label: "Places", icon: MapPin },
   { href: "/admin/spots", label: "Spots", icon: Map },
-  { href: "/admin/enquiry", label: "Enquiry", icon: HelpCircle },
+   { href: "/admin/inquiry", label: "Inquiries", icon: HelpCircle },
+  { href: "/admin/enquiry", label: "Contact Us", icon: HelpCircle },
   { href: "/admin/categories", label: "Categories", icon: HelpCircle },
 ];
 

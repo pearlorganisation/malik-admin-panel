@@ -93,7 +93,9 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
         ...prev.bookingFields,
         {
           name: '',
-          unit: 'quantity', // Matches backend enum
+          unit: 'quantity', 
+          seat: 1,       
+        duration: 0,  
           min: 1,
           max: 10,
           price: 0,
@@ -137,13 +139,22 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
         // Filter out empty strings so we don't send ["", ""] to backend
         whatInclude: formData.whatInclude.filter((i) => i.trim()),
         whatExclude: formData.whatExclude.filter((i) => i.trim()),
-        bookingFields: formData.bookingFields.map((f) => ({
-          name: f.name.trim(),
-          unit: f.unit, // 'minute' or 'quantity'
-          min: Number(f.min) || 0,
-          max: Number(f.max) || 0,
-          price: Number(f.price) || 0,
-        })),
+        // bookingFields: formData.bookingFields.map((f) => ({
+        //   name: f.name.trim(),
+        //   unit: f.unit, // 'minute' or 'quantity'
+        //   min: Number(f.min) || 0,
+        //   max: Number(f.max) || 0,
+        //   price: Number(f.price) || 0,
+        // })),
+       bookingFields: formData.bookingFields.map((f) => ({
+  name: f.name.trim(),
+  unit: f.unit,
+  seat: f.unit === "quantity" ? Number(f.seat) || 0 : undefined,
+  duration: f.unit === "minute" ? Number(f.duration) || 0 : undefined,
+  min: Number(f.min) || 0,
+  max: Number(f.max) || 0,
+  price: Number(f.price) || 0,
+})),
         isActive: true,
       };
 
@@ -352,20 +363,47 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
                   </div>
 
                   {/* Unit */}
-                  <div className="col-span-6 sm:col-span-2">
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Unit</label>
-                    <select
-                      value={field.unit}
-                      onChange={(e) => updateBookingField(index, 'unit', e.target.value)}
-                      className="w-full input border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-emerald-500 focus:outline-none"
-                    >
-                      <option value="quantity">Quantity</option>
-                      <option value="minute">Minute</option>
-                    </select>
-                  </div>
+                 {/* Unit */}
+<div className="col-span-6 sm:col-span-2">
+  <label className="text-xs font-medium text-gray-500 mb-1 block">Unit</label>
+  <select
+    value={field.unit}
+    onChange={(e) => updateBookingField(index, 'unit', e.target.value)}
+    className="w-full input border border-gray-300 rounded px-2 py-1.5 text-sm"
+  >
+    <option value="quantity">Quantity</option>
+    <option value="minute">Minute</option>
+  </select>
+</div>
+
+{/* ✅ Seat (separate column) */}
+{field.unit === "quantity" && (
+  <div className="col-span-6 sm:col-span-2">
+    <label className="text-xs font-medium text-gray-500 mb-1 block">Seat</label>
+    <input
+      type="number"
+      value={field.seat}
+      onChange={(e) => updateBookingField(index, 'seat', e.target.value)}
+      className="w-full input border border-gray-300 rounded px-2 py-1.5 text-sm"
+    />
+  </div>
+)}
+
+{/* ✅ Duration (separate column) */}
+{field.unit === "minute" && (
+  <div className="col-span-6 sm:col-span-2">
+    <label className="text-xs font-medium text-gray-500 mb-1 block">Duration (min)</label>
+    <input
+      type="number"
+      value={field.duration}
+      onChange={(e) => updateBookingField(index, 'duration', e.target.value)}
+      className="w-full input border border-gray-300 rounded px-2 py-1.5 text-sm"
+    />
+  </div>
+)}
 
                   {/* Min */}
-                  <div className="col-span-6 sm:col-span-2">
+                  <div className="col-span-6 sm:col-span-1">
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Min</label>
                     <input
                       type="number"
@@ -377,7 +415,7 @@ export default function AddPackageModal({ activityId, onClose, onSuccess }) {
                   </div>
 
                   {/* Max */}
-                  <div className="col-span-6 sm:col-span-2">
+                  <div className="col-span-6 sm:col-span-1">
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Max</label>
                     <input
                       type="number"
