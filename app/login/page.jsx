@@ -126,7 +126,7 @@ return ( <div className="min-h-screen flex items-center justify-center bg-gray-1
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition"
+          className="w-full bg-linear-to-r from-slate-900 to-slate-800 text-white py-2.5 rounded-lg font-medium flex items-center justify-center gap-2 hover:opacity-90 transition"
         >
           {isLoading ? "Signing in..." : "Sign In →"}
         </button>

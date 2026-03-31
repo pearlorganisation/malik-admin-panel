@@ -29,6 +29,7 @@ export default function ViewActivityModal({
 const [showViewPackage, setShowViewPackage] = useState(false);
 
   if (!activity) return null;
+  console.log("act",activity)
 
   const { data: packagesData, isLoading } =
   useGetPackagesByActivityQuery(activity._id, {
@@ -60,7 +61,6 @@ console.log("pak",packages)
   setSelectedPackage(pkg);
   setShowViewPackage(true);
 };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       {/* BACKDROP */}

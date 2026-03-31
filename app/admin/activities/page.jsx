@@ -3,8 +3,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useGetActivitiesQuery, useDeleteActivityMutation, useToggleActivityStatusMutation } from '@/features/activity/activityApi';
 import ViewActivityModal from '@/components/activity/modals/ViewActivityModal';
-import EditActivityModal from '@/components/activity/modals/EditActivityModal';
+// import EditActivityModal from '@/components/activity/modals/EditActivityModal';
 import ConfirmDeleteModal from '@/components/activity/modals/ConfirmDeleteModal';
+import EditActivityModalNew from '@/components/activity/modals/EditActivityModalNew';
 
 export default function ActivitiesPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -19,13 +20,19 @@ export default function ActivitiesPage() {
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
   const [searchTerm, setSearchTerm] = useState('');
 
-  const activities = response?.data?.data ||[];
-  console.log("Aa",activities)
+
+  // Extract Data & Pagination Info
+  const activities = response?.data?.data || [];
+  console.log("FULL RESPONSE:", response);
+
   const pagination = response?.data?.pagination || { total: 0, page: 1, totalPages: 1 };
   
+  // const filteredActivities = activities.filter(a =>
+  //   a.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
   const filteredActivities = activities.filter(a =>
-    a.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  (a?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
@@ -131,6 +138,7 @@ export default function ActivitiesPage() {
                                   <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 text-xs">No Img</div>
                                 )}
                               </div>
+
                          <div className="ml-4 max-w-[200px]">
   <div className="text-sm font-semibold text-gray-900 truncate">
     {activity.name}
@@ -139,6 +147,7 @@ export default function ActivitiesPage() {
     {activity.categoryId?.name || activity.categoryId || 'Uncategorized'}
   </div>
 </div>
+                   
                             </div>
                           </td>
 

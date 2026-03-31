@@ -40,10 +40,10 @@ export const activityApi = baseApi.injectEndpoints({
 
     /* ================= UPDATE ================= */
     updateActivity: builder.mutation({
-      query: ({ id, formData }) => ({
+      query: ({ id, data }) => ({
         url: `/activity/update/${id}`,
         method: 'PUT',
-        body: formData,
+        body: data,
       }),
       invalidatesTags: (_, __, { id }) => [
         'Activity',

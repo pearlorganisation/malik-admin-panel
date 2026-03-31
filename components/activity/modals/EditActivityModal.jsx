@@ -18,6 +18,7 @@ import {
 import { useUpdateActivityMutation } from '@/features/activity/activityApi';
 
 export default function EditActivityModal({ activity, onClose, onSuccess }) {
+  if (!activity) return null;
   const [updateActivity, { isLoading }] = useUpdateActivityMutation();
   const[activeTab, setActiveTab] = useState('overview');
 
@@ -169,7 +170,8 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
       formDataToSend.append('slug', formData.slug);
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
-      formDataToSend.append('isActive', formData.isActive);
+      // formDataToSend.append('isActive', formData.isActive);
+      formDataToSend.append('isActive', String(formData.isActive));
 
       // Arrays and Objects (Backend typically accepts stringified JSON for these in FormData)
       formDataToSend.append('timeSlots', JSON.stringify(formData.timeSlots));
@@ -182,7 +184,9 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
       await updateActivity({ id: activity._id, formData: formDataToSend }).unwrap();
       onSuccess?.();
     } catch (error) {
-      setErrors({ submit: error?.data?.message || 'Failed to update activity' });
+      // setErrors({ submit: error?.data?.message || 'Failed to update activity' });
+      console.error("UPDATE ERROR:", error); // 🔥 add this
+  setErrors({ submit: error?.data?.message || 'Failed to update activity' });
     }
   };
 

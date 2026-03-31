@@ -6,6 +6,7 @@ import {
   useUpdateSpotMutation,
   useDeleteSpotMutation,
 } from "@/features/spot/spotApi";
+import { useGetCategoriesQuery } from "@/features/category/categoryApi";
 
 const CATEGORY_OPTIONS = [
   "Shopping & Malls",
@@ -23,6 +24,11 @@ export default function ManageSpots() {
   const [deleteSpot] = useDeleteSpotMutation();
 
   const [editingSpot, setEditingSpot] = useState(null);
+
+  const { data: categoryResponse, isLoading: categoryLoading } =
+  useGetCategoriesQuery({ page: 1, limit: 100 });
+
+const categories = categoryResponse?.data || [];
 
   const initialForm = {
     title: "",
@@ -144,7 +150,7 @@ export default function ManageSpots() {
     setEditingSpot(spot);
     setForm({
       title: spot.title || "",
-      category: spot.category ,
+      category: spot.category?._id || spot.category,
       location: spot.location || "",
       overview: spot.overview || "",
       image: null,
@@ -189,10 +195,10 @@ export default function ManageSpots() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-900 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
+          <h1 className="text-4xl font-extrabold text-gray-900 bg-clip-text bg-linear-to-r from-blue-600 to-purple-600">
             Manage Travel Spots
           </h1>
           <p className="mt-3 text-lg text-gray-600">
@@ -202,7 +208,7 @@ export default function ManageSpots() {
 
         {/* Form */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-12">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-5">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 px-8 py-5">
             <h2 className="text-2xl font-bold text-white">
               {editingSpot ? "Edit Spot" : "Add New Spot"}
             </h2>
@@ -226,19 +232,25 @@ export default function ManageSpots() {
                 />
 
                 {/* Category Dropdown */}
-                <select
-                  name="category"
-                  value={form.category}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                >
-                  {CATEGORY_OPTIONS.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+              <select
+  name="category"
+  value={form.category}
+  onChange={handleChange}
+  className="input-field"
+  required
+>
+  <option value="">Select Category</option>
+
+  {categoryLoading ? (
+    <option>Loading categories...</option>
+  ) : (
+    categories.map((cat) => (
+      <option key={cat._id} value={cat._id}>
+        {cat.name}
+      </option>
+    ))
+  )}
+</select>
 
                 <input
                   type="text"
@@ -418,7 +430,7 @@ export default function ManageSpots() {
             <div className="flex flex-wrap gap-4 pt-6 border-t border-gray-200">
               <button
                 type="submit"
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition"
+                className="px-8 py-3 bg-linear-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition"
               >
                 {editingSpot ? "Update Spot" : "Create Spot"}
               </button>
@@ -437,7 +449,7 @@ export default function ManageSpots() {
 
         {/* Spots List */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-5">
+          <div className="bg-linear-to-r from-blue-600 to-purple-600 px-8 py-5">
             <h2 className="text-2xl font-bold text-white">
               All Spots ({spots.length})
             </h2>
@@ -492,7 +504,7 @@ export default function ManageSpots() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {spot.category}
+                          {spot.category?.name || "N/A"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
