@@ -5,9 +5,8 @@ import { useGetActivitiesQuery, useDeleteActivityMutation, useToggleActivityStat
 import ViewActivityModal from '@/components/activity/modals/ViewActivityModal';
 import EditActivityModal from '@/components/activity/modals/EditActivityModal';
 import ConfirmDeleteModal from '@/components/activity/modals/ConfirmDeleteModal';
-import { useRouter } from "next/navigation";
+
 export default function ActivitiesPage() {
-  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10; 
 

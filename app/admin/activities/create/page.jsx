@@ -2,9 +2,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useCreateActivityMutation } from "@/features/activity/activityApi";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { 
+  useCreateActivityMutation, 
+  useGetActivityByIdQuery // Make sure this query exists in your activityApi
+} from "@/features/activity/activityApi";
+
 import ActivityTabs from "../components/ActivityTabs";
 import BasicInfoSection from "../components/BasicInfoSection";
 import ImagesSection from "../components/ImagesSection";
@@ -15,7 +18,7 @@ import ItinerarySection from "../components/ItinerarySection";
 import InclusionsSection from "../components/InclusionsSection";
 import RestrictionsSection from "../components/RestrictionsSection";
 import { useGetCategoriesQuery } from "@/features/category/categoryApi";
-import { useGetActivityByIdQuery } from "@/features/activity/activityApi";
+
 const initialFormData = {
   title: "",
   shortDescription: "",
@@ -72,16 +75,19 @@ const initialFormData = {
 };
 
 export default function CreateActivityPage() {
-  const searchParams = useSearchParams();
-const duplicateId = searchParams.get("duplicateId");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const duplicateId = searchParams.get("duplicateId");
+
   const [formData, setFormData] = useState(initialFormData);
   const [activeTab, setActiveTab] = useState("basic");
+  
   const [createActivity, { isLoading: isSaving }] = useCreateActivityMutation();
   const { data: categoriesData } = useGetCategoriesQuery({});
   const [categories, setCategories] = useState([]);
-  const { data: activityData, isLoading: isFetching } =
-  useGetActivityByIdQuery(duplicateId, {
+
+  // Fetch Duplicate Activity Data if duplicateId exists in URL
+  const { data: duplicateActivityData, isLoading: isFetchingDuplicate } = useGetActivityByIdQuery(duplicateId, {
     skip: !duplicateId,
   });
 
@@ -89,76 +95,43 @@ const duplicateId = searchParams.get("duplicateId");
     if (categoriesData && categoriesData?.data) {
       setCategories(categoriesData.data);
     }
-    
   }, [categoriesData]);
+
+  // Pre-fill form when duplicate data is fetched successfully
   useEffect(() => {
-  if (duplicateId) {
-    setActiveTab("basic");
-    window.scrollTo(0, 0);
-  }
-}, [duplicateId]);
-  useEffect(() => {
-  if (activityData?.data && duplicateId) {
-    const a = activityData.data;
-
-    setFormData({
-      ...initialFormData,
-
-      // 🔹 Basic Info
-      title: a.name ? a.name + " (Copy)" : "",
-      shortDescription: a.shortDescription || "",
-      fullDescription: a.fullDescription || "",
-
-      category: a.categoryId?._id || "",
-      location: a.placeId?._id || "",
-
-      // 🔹 Images
-      images: a.Images?.map((img) => ({
-        preview: img.secure_url,
-        file: null,
-      })) || [],
-
-      video: { file: null },
-
-      // 🔹 Details
-      duration: a.duration || { label: "", hours: null },
-      languages: a.languages || [],
-      liveGuide: a.liveGuide ?? true,
-
-      cancellationPolicy:
-        a.cancellationPolicy || initialFormData.cancellationPolicy,
-
-      reservePolicy:
-        a.reservePolicy || initialFormData.reservePolicy,
-
-      pickup: a.pickup || initialFormData.pickup,
-
-      // 🔹 Variants (IMPORTANT)
-      variants: a.variants?.length
-        ? a.variants.map((v) => ({
-            ...v,
-            images: v.images || [],
-            video: { url: v.video?.url || "" },
-          }))
-        : initialFormData.variants,
-
-      // 🔹 Availability
-      availableDates: a.availableDates || [],
-      timeSlots: a.timeSlots || initialFormData.timeSlots,
-
-      // 🔹 Other Sections
-      itinerary: a.itinerary || [],
-      highlights: a.highlights || [],
-      includes: a.includes || [],
-      excludes: a.excludes || [],
-      addons: a.addons || [],
-      notSuitableFor: a.notSuitableFor || [],
-      importantInfo: a.importantInfo || [],
-
-      isActive: false, // always new inactive
-    });
-  }
-}, [activityData, duplicateId]);
+    if (duplicateActivityData?.data) {
+      const activity = duplicateActivityData.data;
+      
+      setFormData({
+        ...initialFormData,
+        title: activity.title ? `${activity.title} (Copy)` : `${activity.name || ""} (Copy)`,
+        shortDescription: activity.shortDescription || "",
+        fullDescription: activity.fullDescription || "",
+        category: activity.categoryId?._id || activity.categoryId || activity.category || "",
+        location: activity.placeId?._id || activity.placeId || activity.location || "",
+        tags: activity.tags || [],
+        duration: activity.duration || initialFormData.duration,
+        languages: activity.languages || [],
+        liveGuide: activity.liveGuide !== undefined ? activity.liveGuide : true,
+        cancellationPolicy: activity.cancellationPolicy || initialFormData.cancellationPolicy,
+        reservePolicy: activity.reservePolicy || initialFormData.reservePolicy,
+        pickup: activity.pickup || initialFormData.pickup,
+        variants: activity.variants?.length > 0 ? activity.variants : initialFormData.variants,
+        availableDates: activity.availableDates || [],
+        timeSlots: activity.timeSlots?.length > 0 ? activity.timeSlots : initialFormData.timeSlots,
+        itinerary: activity.itinerary || [],
+        highlights: activity.highlights || [],
+        includes: activity.includes || [],
+        excludes: activity.excludes || [],
+        addons: activity.addons || [],
+        notSuitableFor: activity.notSuitableFor || [],
+        importantInfo: activity.importantInfo || [],
+        isActive: true,
+        // Images and Videos are kept empty intentionally to avoid File Object conflicts, 
+        // User should re-upload them or you need URL to File conversion logic
+      });
+    }
+  }, [duplicateActivityData]);
 
   const buildFormDataPayload = () => {
     const fd = new FormData();
@@ -269,16 +242,19 @@ const duplicateId = searchParams.get("duplicateId");
         return null;
     }
   };
-if (duplicateId && isFetching) {
-  return (
-    <div className="h-screen flex items-center justify-center">
-      <div className="animate-spin h-10 w-10 border-b-2 border-indigo-600"></div>
-    </div>
-  );
-}
+
+  // Show a loading state while fetching duplicate data
+  if (duplicateId && isFetchingDuplicate) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+        <p className="text-gray-500 font-medium">Loading data to duplicate...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
-      {/* Header */}
       {/* Header */}
       <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -310,9 +286,9 @@ if (duplicateId && isFetching) {
                   Activities <span className="mx-1">/</span> Create
                 </p>
 
-               <h1 className="text-2xl font-semibold text-gray-900">
-  {duplicateId ? "Duplicate Activity" : "Create New Activity"}
-</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
+                  {duplicateId ? "Duplicate Activity" : "Create New Activity"}
+                </h1>
 
                 <p className="text-sm text-gray-500 mt-0.5 max-w-xl">
                   Fill in the details below to create and publish a new
@@ -381,7 +357,7 @@ if (duplicateId && isFetching) {
                     Creating...
                   </>
                 ) : (
-                 <> {duplicateId ? "Create Duplicate" : "Create Activity"}</>
+                  "Create Activity"
                 )}
               </button>
             </div>
