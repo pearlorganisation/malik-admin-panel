@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCreateActivityMutation } from "@/features/activity/activityApi";
-
+import { useSearchParams } from "next/navigation";
 import ActivityTabs from "../components/ActivityTabs";
 import BasicInfoSection from "../components/BasicInfoSection";
 import ImagesSection from "../components/ImagesSection";
@@ -15,7 +15,7 @@ import ItinerarySection from "../components/ItinerarySection";
 import InclusionsSection from "../components/InclusionsSection";
 import RestrictionsSection from "../components/RestrictionsSection";
 import { useGetCategoriesQuery } from "@/features/category/categoryApi";
-
+import { useGetActivityByIdQuery } from "@/features/activity/activityApi";
 const initialFormData = {
   title: "",
   shortDescription: "",
@@ -72,18 +72,93 @@ const initialFormData = {
 };
 
 export default function CreateActivityPage() {
+  const searchParams = useSearchParams();
+const duplicateId = searchParams.get("duplicateId");
   const router = useRouter();
   const [formData, setFormData] = useState(initialFormData);
   const [activeTab, setActiveTab] = useState("basic");
   const [createActivity, { isLoading: isSaving }] = useCreateActivityMutation();
   const { data: categoriesData } = useGetCategoriesQuery({});
   const [categories, setCategories] = useState([]);
+  const { data: activityData, isLoading: isFetching } =
+  useGetActivityByIdQuery(duplicateId, {
+    skip: !duplicateId,
+  });
 
   useEffect(() => {
     if (categoriesData && categoriesData?.data) {
       setCategories(categoriesData.data);
     }
+    
   }, [categoriesData]);
+  useEffect(() => {
+  if (duplicateId) {
+    setActiveTab("basic");
+    window.scrollTo(0, 0);
+  }
+}, [duplicateId]);
+  useEffect(() => {
+  if (activityData?.data && duplicateId) {
+    const a = activityData.data;
+
+    setFormData({
+      ...initialFormData,
+
+      // 🔹 Basic Info
+      title: a.name ? a.name + " (Copy)" : "",
+      shortDescription: a.shortDescription || "",
+      fullDescription: a.fullDescription || "",
+
+      category: a.categoryId?._id || "",
+      location: a.placeId?._id || "",
+
+      // 🔹 Images
+      images: a.Images?.map((img) => ({
+        preview: img.secure_url,
+        file: null,
+      })) || [],
+
+      video: { file: null },
+
+      // 🔹 Details
+      duration: a.duration || { label: "", hours: null },
+      languages: a.languages || [],
+      liveGuide: a.liveGuide ?? true,
+
+      cancellationPolicy:
+        a.cancellationPolicy || initialFormData.cancellationPolicy,
+
+      reservePolicy:
+        a.reservePolicy || initialFormData.reservePolicy,
+
+      pickup: a.pickup || initialFormData.pickup,
+
+      // 🔹 Variants (IMPORTANT)
+      variants: a.variants?.length
+        ? a.variants.map((v) => ({
+            ...v,
+            images: v.images || [],
+            video: { url: v.video?.url || "" },
+          }))
+        : initialFormData.variants,
+
+      // 🔹 Availability
+      availableDates: a.availableDates || [],
+      timeSlots: a.timeSlots || initialFormData.timeSlots,
+
+      // 🔹 Other Sections
+      itinerary: a.itinerary || [],
+      highlights: a.highlights || [],
+      includes: a.includes || [],
+      excludes: a.excludes || [],
+      addons: a.addons || [],
+      notSuitableFor: a.notSuitableFor || [],
+      importantInfo: a.importantInfo || [],
+
+      isActive: false, // always new inactive
+    });
+  }
+}, [activityData, duplicateId]);
 
   const buildFormDataPayload = () => {
     const fd = new FormData();
@@ -194,7 +269,13 @@ export default function CreateActivityPage() {
         return null;
     }
   };
-
+if (duplicateId && isFetching) {
+  return (
+    <div className="h-screen flex items-center justify-center">
+      <div className="animate-spin h-10 w-10 border-b-2 border-indigo-600"></div>
+    </div>
+  );
+}
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100">
       {/* Header */}
@@ -229,9 +310,9 @@ export default function CreateActivityPage() {
                   Activities <span className="mx-1">/</span> Create
                 </p>
 
-                <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-                  Create New Activity
-                </h1>
+               <h1 className="text-2xl font-semibold text-gray-900">
+  {duplicateId ? "Duplicate Activity" : "Create New Activity"}
+</h1>
 
                 <p className="text-sm text-gray-500 mt-0.5 max-w-xl">
                   Fill in the details below to create and publish a new
@@ -300,7 +381,7 @@ export default function CreateActivityPage() {
                     Creating...
                   </>
                 ) : (
-                  "Create Activity"
+                 <> {duplicateId ? "Create Duplicate" : "Create Activity"}</>
                 )}
               </button>
             </div>
