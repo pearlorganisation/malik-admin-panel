@@ -6,8 +6,10 @@ import ViewActivityModal from '@/components/activity/modals/ViewActivityModal';
 // import EditActivityModal from '@/components/activity/modals/EditActivityModal';
 import ConfirmDeleteModal from '@/components/activity/modals/ConfirmDeleteModal';
 import EditActivityModalNew from '@/components/activity/modals/EditActivityModalNew';
+import { useRouter } from "next/navigation";
 
 export default function ActivitiesPage() {
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10; 
 
@@ -326,7 +328,7 @@ export default function ActivitiesPage() {
       )}
 
       {editModal.open && (
-        <EditActivityModal
+        <EditActivityModalNew
           activity={editModal.activity}
           onClose={() => setEditModal({ open: false, activity: null })}
           onSuccess={() => {
@@ -347,3 +349,4 @@ export default function ActivitiesPage() {
     </div>
   );
 }
+
