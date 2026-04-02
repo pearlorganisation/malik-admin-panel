@@ -1,20 +1,44 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Step7MediaUpload({ formData, onFormDataChange, onNext, onPrevious }) {
   const [imagePreviews, setImagePreviews] = useState([]);
 
+  // Generate previews (handles both File & existing images)
+  useEffect(() => {
+    if (!formData.images) return;
+
+    const previews = formData.images.map((img) => {
+      if (img instanceof File) {
+        return URL.createObjectURL(img);
+      }
+      if (img.isExisting) {
+        return img.secure_url;
+      }
+      return "";
+    });
+
+    setImagePreviews(previews);
+
+    // Cleanup (prevent memory leak)
+    return () => {
+      previews.forEach((url) => {
+        if (url.startsWith("blob:")) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [formData.images]);
+
+  // Handle Image Upload
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files || []);
     const newImages = [...(formData.images || []), ...files];
-    
     onFormDataChange({ images: newImages });
-
-    const previews = newImages.map(file => URL.createObjectURL(file));
-    setImagePreviews(previews);
   };
 
+  // Handle Video Upload
   const handleVideoChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -22,14 +46,13 @@ export default function Step7MediaUpload({ formData, onFormDataChange, onNext, o
     }
   };
 
+  // Remove Image
   const removeImage = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
     onFormDataChange({ images: newImages });
-    
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setImagePreviews(newPreviews);
   };
 
+  // Remove Video
   const removeVideo = () => {
     onFormDataChange({ video: null });
   };
@@ -45,42 +68,26 @@ export default function Step7MediaUpload({ formData, onFormDataChange, onNext, o
       <div className="space-y-4 border border-gray-200 rounded-lg p-6 bg-linear-to-br from-blue-50 to-cyan-50">
         <div>
           <h3 className="font-semibold text-gray-900 mb-2">Activity Images</h3>
-          <p className="text-gray-600 text-xs mb-4">Upload up to 10 high-quality images (recommended 4-6 images)</p>
+          <p className="text-gray-600 text-xs mb-4">Upload up to 10 images</p>
         </div>
 
-        {/* Upload Area */}
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-blue-300 rounded-lg p-8 bg-white hover:bg-blue-50 transition cursor-pointer">
-          <input
-            type="file"
-            multiple
-            accept="image/*"
-            onChange={handleImageChange}
-            className="hidden"
-          />
-          <div className="text-center">
-            <p className="text-3xl mb-2">📷</p>
-            <p className="text-sm font-semibold text-gray-900">Click to upload images</p>
-            <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
-            <p className="text-xs text-gray-400 mt-2">PNG, JPG, GIF up to 10MB</p>
-          </div>
+        {/* Upload */}
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-blue-300 rounded-lg p-8 bg-white hover:bg-blue-50 cursor-pointer">
+          <input type="file" multiple accept="image/*" onChange={handleImageChange} className="hidden" />
+          <p>📷 Click to upload</p>
         </label>
 
-        {/* Image Previews */}
+        {/* Preview */}
         {imagePreviews.length > 0 && (
           <div>
-            <p className="text-sm font-semibold text-gray-900 mb-3">{formData.images?.length} image(s) selected</p>
+            <p className="text-sm font-semibold mb-3">{formData.images?.length} image(s)</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {imagePreviews.map((preview, index) => (
                 <div key={index} className="relative group">
-                  <img
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg border border-gray-300"
-                  />
+                  <img src={preview} className="w-full h-24 object-cover rounded-lg" />
                   <button
-                    type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-sm"
+                    className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100"
                   >
                     ✕
                   </button>
@@ -93,80 +100,39 @@ export default function Step7MediaUpload({ formData, onFormDataChange, onNext, o
 
       {/* Video Section */}
       <div className="space-y-4 border border-gray-200 rounded-lg p-6 bg-linear-to-br from-purple-50 to-pink-50">
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-2">Activity Video</h3>
-          <p className="text-gray-600 text-xs mb-4">Upload one promotional video (optional)</p>
-        </div>
+        <h3 className="font-semibold">Activity Video</h3>
 
         {!formData.video ? (
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-purple-300 rounded-lg p-8 bg-white hover:bg-purple-50 transition cursor-pointer">
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleVideoChange}
-              className="hidden"
-            />
-            <div className="text-center">
-              <p className="text-3xl mb-2">🎬</p>
-              <p className="text-sm font-semibold text-gray-900">Click to upload video</p>
-              <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
-              <p className="text-xs text-gray-400 mt-2">MP4, WebM up to 100MB</p>
-            </div>
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-purple-300 rounded-lg p-8 bg-white cursor-pointer">
+            <input type="file" accept="video/*" onChange={handleVideoChange} className="hidden" />
+            <p>🎬 Upload Video</p>
           </label>
         ) : (
-          <div className="bg-white p-4 rounded-lg border border-gray-300 flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🎬</span>
-              <div>
-                <p className="text-sm font-semibold text-gray-900">{formData.video.name}</p>
-                <p className="text-xs text-gray-500">{(formData.video.size / 1024 / 1024).toFixed(2)} MB</p>
-              </div>
+          <div className="bg-white p-4 rounded-lg border flex justify-between items-center">
+            <div>
+              <p className="font-semibold">
+                {formData.video.name || "Existing Video"}
+              </p>
+              {formData.video.size && (
+                <p className="text-xs text-gray-500">
+                  {(formData.video.size / 1024 / 1024).toFixed(2)} MB
+                </p>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={removeVideo}
-              className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition font-semibold"
-            >
-              Remove
-            </button>
+            <button onClick={removeVideo} className="text-red-600">Remove</button>
           </div>
         )}
       </div>
 
-      {/* Tips */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p className="text-sm font-semibold text-yellow-900 mb-2">📸 Pro Tips</p>
-        <ul className="text-xs text-yellow-800 space-y-1">
-          <li>• Use high-quality images that showcase the best features of your activity</li>
-          <li>• Include landscape, close-up, and action shots for better engagement</li>
-          <li>• Keep video under 5 minutes for best performance</li>
-          <li>• First image will be shown as thumbnail</li>
-        </ul>
-      </div>
-
       {/* Navigation */}
-      <div className="flex justify-between gap-3 pt-6 border-t border-gray-200">
-        <button
-          onClick={onPrevious}
-          className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition"
-        >
+      <div className="flex justify-between pt-6 border-t">
+        <button onClick={onPrevious} className="px-6 py-3 bg-gray-200 rounded-lg">
           Back
         </button>
-        <button
-          onClick={onNext}
-          className="px-6 py-3 bg-linear-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition"
-        >
-          Continue to Review
+        <button onClick={onNext} className="px-6 py-3 bg-blue-600 text-white rounded-lg">
+          Continue
         </button>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
-      `}</style>
     </div>
   );
 }
