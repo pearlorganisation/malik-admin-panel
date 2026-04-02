@@ -269,7 +269,7 @@ export default function CreateActivityForm() {
     duplicateId, 
     { skip: !duplicateId }
   );
-
+console.log("activitid",duplicateActivityData)
   const [formData, setFormData] = useState({
     name: '',
     categoryId: '',
@@ -283,6 +283,7 @@ export default function CreateActivityForm() {
     images: [], // Will hold Files OR existing image objects
     video: null, // Will hold File OR existing video object
     packages: [], // Added to hold variants
+    originalActivityId: null,
     isActive: true,
   });
 
@@ -320,6 +321,7 @@ export default function CreateActivityForm() {
 
       setFormData(prevData => ({
         ...prevData,
+         originalActivityId: act._id,
         name: act.name ? `${act.name} (Copy)` : 'New Activity (Copy)',
         categoryId: act.categoryId?._id || act.categoryId || '',
         placeId: act.placeId?._id || act.placeId || '',
@@ -373,6 +375,9 @@ export default function CreateActivityForm() {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
+       if (formData.originalActivityId) {
+    formDataToSend.append('activityId', formData.originalActivityId);
+  }
       formDataToSend.append("timeSlots", JSON.stringify(formData.timeSlots));
       formDataToSend.append('isActive', formData.isActive);
 

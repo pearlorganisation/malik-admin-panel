@@ -35,11 +35,19 @@ const [showViewPackage, setShowViewPackage] = useState(false);
   const [showUpdatePackage, setShowUpdatePackage] = useState(false);
   const [packageToEdit, setPackageToEdit] = useState(null);
   if (!activity) return null;
-  console.log("act",activity)
+  // console.log("act",activity)
 
-  const { data: packagesData, isLoading } =
-  useGetPackagesByActivityQuery(activity._id, {
-    skip: activeTab !== "packages",
+  // const { data: packagesData, isLoading } =
+  // useGetPackagesByActivityQuery(activity._id, {
+  //   skip: activeTab !== "packages",
+  // });
+  console.log("act", activity);
+
+const activityIdToUse = activity?.sourceActivityId || activity?._id;
+
+const { data: packagesData, isLoading } =
+  useGetPackagesByActivityQuery(activityIdToUse, {
+    skip: activeTab !== "packages" || !activityIdToUse,
   });
 const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
 const packages = packagesData?.data || [];
