@@ -105,11 +105,19 @@ getPackageById: builder.query({
     updatePackage: builder.mutation({
       query: ({ id, packageData }) => ({
         url: `/activity/update-package/${id}`,
-        method: 'POST',
+        method: 'PUT',
         body: packageData,
       }),
       invalidatesTags: ['Activity', 'Package'],
     }),
+    /* ================= DELETE PACKAGE ================= */
+deletePackage: builder.mutation({
+  query: (id) => ({
+    url: `/activity/delete-package/${id}`, 
+    method: 'DELETE',
+  }),
+  invalidatesTags: ['Activity', 'Package'], 
+}),
   }),
 });
 
@@ -123,6 +131,7 @@ export const {
   useToggleActivityStatusMutation,
   useCreatePackageMutation,
   useUpdatePackageMutation,
+  useDeletePackageMutation,
   useGetPackagesByActivityQuery,
   useGetAllPackagesQuery,
   useGetPackageByIdQuery

@@ -12,10 +12,15 @@ import {
   Layers,
   Info,
   CheckCircle,
+    Edit,       
+  Trash2,     
+  Eye         
 } from 'lucide-react';
+import toast from 'react-hot-toast'; 
 import AddPackageModal from './AddPackageModal';
 import ViewPackageModal from './ViewPackageModal';
-import { useGetPackagesByActivityQuery } from '@/features/activity/activityApi';
+import UpdatePackageModal from './UpdatePackageModal';
+import { useGetPackagesByActivityQuery,useDeletePackageMutation  } from '@/features/activity/activityApi';
 
 export default function ViewActivityModal({
   activity,
@@ -27,7 +32,8 @@ export default function ViewActivityModal({
 
   const [selectedPackage, setSelectedPackage] = useState(null);
 const [showViewPackage, setShowViewPackage] = useState(false);
-
+  const [showUpdatePackage, setShowUpdatePackage] = useState(false);
+  const [packageToEdit, setPackageToEdit] = useState(null);
   if (!activity) return null;
   console.log("act",activity)
 
@@ -35,7 +41,7 @@ const [showViewPackage, setShowViewPackage] = useState(false);
   useGetPackagesByActivityQuery(activity._id, {
     skip: activeTab !== "packages",
   });
-
+const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
 const packages = packagesData?.data || [];
 
 console.log("pak",packages)
@@ -60,6 +66,23 @@ console.log("pak",packages)
   const handleViewPackage = (pkg) => {
   setSelectedPackage(pkg);
   setShowViewPackage(true);
+};
+ const handleEditPackage = (pkg) => {
+    setPackageToEdit(pkg);
+    setShowUpdatePackage(true);
+  };
+
+ const handleDeletePackage = async (packageId) => {
+  const isConfirm = window.confirm("Are you sure you want to delete this package?");
+  if (!isConfirm) return;
+
+  try {
+    const res = await deletePackage(packageId).unwrap();
+    toast.success(res.message || "Package deleted successfully!");
+  } catch (error) {
+    console.error("Delete Error:", error);
+    toast.error(error?.data?.message || "Failed to delete package");
+  }
 };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
@@ -395,12 +418,14 @@ console.log("pak",packages)
     ) : packages.length ? (
       <div className="grid md:grid-cols-2 gap-4">
         {packages.map((pkg) => (
-          <PackageCard
-            key={pkg._id}
-            pkg={pkg}
-            onClick={() => handleViewPackage(pkg)}
-          />
-        ))}
+  <PackageCard
+    key={pkg._id}
+    pkg={pkg}
+    onView={() => handleViewPackage(pkg)}  
+    onEdit={() => handleEditPackage(pkg)}
+    onDelete={() => handleDeletePackage(pkg._id)}
+  />
+))}
       </div>
     ) : (
       <EmptyState message="No packages yet." />
@@ -429,6 +454,17 @@ console.log("pak",packages)
     package={selectedPackage}
     isOpen={showViewPackage}
     onClose={() => setShowViewPackage(false)}
+  />
+)}
+
+{showUpdatePackage && (
+  <UpdatePackageModal
+    packageData={packageToEdit}
+    isOpen={showUpdatePackage}
+    onClose={() => setShowUpdatePackage(false)}
+    onSuccess={() => {
+      setShowUpdatePackage(false);
+    }}
   />
 )}
     </div>
@@ -508,11 +544,8 @@ const ItineraryCard = ({ item }) => (
   </div>
 );
 
-const PackageCard = ({ pkg, onClick }) => (
-  <div
-    onClick={onClick}
-    className="group bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-200 cursor-pointer"
-  >
+const PackageCard = ({ pkg, onView, onEdit, onDelete }) => (
+  <div className="group bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-200">
     {/* HEADER */}
     <div className="flex items-start justify-between mb-3">
       <div>
@@ -531,9 +564,44 @@ const PackageCard = ({ pkg, onClick }) => (
         </span>
       </div>
 
-      <div className="text-right">
-        <p className="text-xs text-gray-400">Price</p>
+      <div className="text-right flex flex-col items-end gap-2">
         <p className="text-lg font-bold text-blue-600">AED {pkg.price}</p>
+        
+        {/* ================= ACTIONS (VIEW, EDIT, DELETE) ================= */}
+        <div className="flex items-center gap-1">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
+            title="View Package"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            className="p-1.5 text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition"
+            title="Edit Package"
+          >
+            <Edit className="w-4 h-4" />
+          </button>
+          
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition"
+            title="Delete Package"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
 
