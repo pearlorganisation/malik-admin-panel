@@ -48,8 +48,10 @@ export default function ActivitiesPage() {
       setDeleteModal({ open: false, id: null });
       refetch();
     } catch (error) {
-      console.error('Delete failed:', error);
-    }
+  console.error('FULL ERROR:', error);
+  console.error('ERROR DATA:', error?.data);
+  console.error('ERROR STATUS:', error?.status);
+}
   };
 
   const handleToggleStatus = async (id) => {
