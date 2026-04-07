@@ -32,6 +32,7 @@ const menuItems = [
    { href: "/admin/inquiry", label: "Inquiries", icon: HelpCircle },
   { href: "/admin/enquiry", label: "Contact Us", icon: HelpCircle },
   { href: "/admin/categories", label: "Categories", icon: HelpCircle },
+  { href: "/admin/addons", label: "Addons", icon: Package },
 ];
 
 export default function Sidebar() {
