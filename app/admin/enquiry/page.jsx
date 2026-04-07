@@ -75,7 +75,7 @@ export default function ContactsPage() {
           Contact Queries
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage and track incoming customer messages.
+          Manage and track incoming customer contact requests.
         </p>
       </div>
 
@@ -90,7 +90,7 @@ export default function ContactsPage() {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              setCurrentPage(1); // Reset to page 1 on search
+              setCurrentPage(1); 
             }}
           />
         </div>
@@ -123,7 +123,6 @@ export default function ContactsPage() {
               <tr>
                 <th className="px-6 py-4 font-medium">Name</th>
                 <th className="px-6 py-4 font-medium">Contact</th>
-                <th className="px-6 py-4 font-medium">Message Preview</th>
                 <th className="px-6 py-4 font-medium">
                   <div className="flex items-center gap-1 cursor-pointer hover:text-gray-700">
                     Date <ArrowUpDown className="h-3 w-3" />
@@ -154,11 +153,6 @@ export default function ContactsPage() {
                           {item.phone}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="max-w-50 truncate text-gray-500 wrap-break-word">
-                        {item.message}
-                      </p>
                     </td>
                     <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
                       {new Date(item.createdAt).toLocaleDateString()}
@@ -192,7 +186,7 @@ export default function ContactsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center">
+                  <td colSpan={5} className="py-12 text-center">
                     <div className="flex flex-col items-center justify-center text-gray-400">
                       <Inbox className="h-10 w-10 mb-2 opacity-50" />
                       <p>No records found</p>
@@ -252,10 +246,10 @@ export default function ContactsPage() {
       {/* Modal View */}
       {selectedContact && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200 transform transition-all scale-100">
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200 transform transition-all scale-100">
             <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Message Details
+                Contact Details
               </h3>
             </div>
             <div className="p-6">
@@ -264,9 +258,15 @@ export default function ContactsPage() {
                   <h4 className="text-base font-medium text-gray-900">
                     {selectedContact.name}
                   </h4>
-                  <div className="mt-1 flex flex-col gap-0.5 text-sm text-gray-500">
-                    <span>{selectedContact.email}</span>
-                    <span>{selectedContact.phone}</span>
+                  <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Email</span>
+                      <span>{selectedContact.email}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Phone</span>
+                      <span>{selectedContact.phone}</span>
+                    </div>
                   </div>
                 </div>
                 <div
@@ -278,15 +278,9 @@ export default function ContactsPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-gray-50 p-4 ring-1 ring-inset ring-gray-100">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">
-                  {selectedContact.message}
-                </p>
-              </div>
-
-              <div className="mt-2 text-right">
+              <div className="mt-4 text-left border-t pt-4">
                 <span className="text-xs text-gray-400">
-                  Received:{" "}
+                  Query Received:{" "}
                   {new Date(selectedContact.createdAt).toLocaleString()}
                 </span>
               </div>
