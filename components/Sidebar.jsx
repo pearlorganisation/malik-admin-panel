@@ -28,7 +28,7 @@
     
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
      { href: "/admin/pages", label: "CMS Pages", icon: FileText },
-     { href: "/admin/tours", label: "Bookings", icon: Ticket },
+     { href: "/admin/bookings", label: "Bookings", icon: Ticket },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/activities", label: "Activity", icon: BarChart3 },
     { href: "/activities/create", label: "Create Activity", icon: BarChart3 },
