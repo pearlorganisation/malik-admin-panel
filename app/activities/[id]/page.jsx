@@ -14,6 +14,7 @@ export default function ActivityDetail({ params }) {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <img
+      
         src={activity?.imageUrl}
         className="rounded-lg w-full h-80 object-cover"
       />
