@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "@/features/auth/authSlice";
-import { authApi } from "@/features/auth/authApi";
 import { baseApi } from "@/services/baseApi";
 
 import storage from "redux-persist/lib/storage";
@@ -17,15 +16,14 @@ export const store = configureStore({
   reducer: {
     auth: persistedReducer,
 
-    // RTK Query reducers
-    [authApi.reducerPath]: authApi.reducer,
+    // ✅ ONLY baseApi
     [baseApi.reducerPath]: baseApi.reducer,
   },
 
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(authApi.middleware, baseApi.middleware),
+    }).concat(baseApi.middleware), // ✅ ONLY baseApi
 });
 
 export const persistor = persistStore(store);

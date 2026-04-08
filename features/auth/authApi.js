@@ -1,40 +1,32 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "@/services/baseApi.js";
 
-export const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL + "/auth",
-    credentials: "include",
-  }),
-  tagTypes: ["Auth"],
-
+export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    
     login: builder.mutation({
       query: (data) => ({
-        url: "/login",
+        url: "/auth/login",
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Auth"],
     }),
 
     logout: builder.mutation({
       query: () => ({
-        url: "/logout",
+        url: "/auth/logout",
         method: "POST",
       }),
-      invalidatesTags: ["Auth"],
     }),
 
     getProfile: builder.query({
-      query: () => "/me",
-      providesTags: ["Auth"],
+      query: () => "/auth/me",
     }),
+
   }),
 });
 
 export const {
   useLoginMutation,
-  useLogoutMutation,   // ✅ correct hook
+  useLogoutMutation,
   useGetProfileQuery,
 } = authApi;

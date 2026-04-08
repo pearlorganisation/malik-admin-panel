@@ -23,6 +23,7 @@
   import { useLogoutMutation } from "@/features/auth/authApi";
   import { clearUser } from "@/features/auth/authSlice";
   import { motion } from "framer-motion";
+  import { baseApi } from "@/services/baseApi";
 
   const menuItems = [
     
@@ -49,17 +50,21 @@
     const router = useRouter();
     const [logoutUser] = useLogoutMutation();
 
-    const handleLogout = async () => {
-      try {
-        await logoutUser().unwrap();
-        dispatch(clearUser());
-        router.push("/login");
-      } catch (error) {
-        console.error("Logout error", error);
-      }
-    };
+const handleLogout = async () => {
+  console.log("Logout clicked"); // 👈 check this
 
-    if (!isAuthenticated) return null;
+  try {
+    await logoutUser().unwrap();
+    dispatch(clearUser());
+    dispatch(baseApi.util.resetApiState());
+    router.push("/login");
+  } catch (error) {
+    console.error("Logout error", error);
+  }
+};
+   
+
+if (!isAuthenticated) return null;
 
     return (
       <>
@@ -113,7 +118,7 @@
           </div>
 
           {/* MENU */}
-          <nav className="flex-1 overflow-y-auto py-6">
+          <nav className="flex-1 overflow-y-auto py-6 scrollbar-hide">
             <ul className="space-y-2 px-4">
               {menuItems.map((item, index) => {
                 const Icon = item.icon;
@@ -154,9 +159,9 @@
           <div className="p-4 border-t border-white/10 space-y-4">
 
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition"
-            >
+  onClick={handleLogout}
+  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition z-[9999] relative"
+>
               <LogOut className="w-5 h-5" />
               Logout
             </button>
