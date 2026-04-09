@@ -1,395 +1,527 @@
-// "use client";
-
-// import React, { useState, useCallback, useEffect } from "react";
-// import Image from "next/image";
-// import {
-//   Calendar,
-//   Clock,
-//   Users,
-//   Search,
-//   Loader2,
-//   ChevronLeft,
-//   ChevronRight,
-//   MoreHorizontal,
-// } from "lucide-react";
-// import { useGetBookingsQuery } from "@/features/booking/bookingApi";
-// import { useRouter } from "next/navigation";
-
-// const BookingCard = ({ booking }) => {
-//   const router = useRouter();
-
-//   const mainImage =
-//     booking?.activity?.images?.find((img) => img.isMain)?.url ||
-//     booking?.activity?.images?.[0]?.url ||
-//     "/placeholder.jpg";
-
-//   const statusConfig = {
-//     pending: {
-//       bg: "bg-amber-100",
-//       text: "text-amber-800",
-//       dot: "bg-amber-400",
-//     },
-//     confirmed: {
-//       bg: "bg-emerald-100",
-//       text: "text-emerald-800",
-//       dot: "bg-emerald-400",
-//     },
-//     paid: { bg: "bg-green-100", text: "text-green-800", dot: "bg-green-400" },
-//     cancelled: { bg: "bg-red-100", text: "text-red-800", dot: "bg-red-400" },
-//     completed: { bg: "bg-blue-100", text: "text-blue-800", dot: "bg-blue-400" },
-//   };
-
-//   const statusStyle = statusConfig[booking.status] || statusConfig.pending;
-
-//   const formatDate = (dateStr) =>
-//     new Date(dateStr).toLocaleDateString("en-US", {
-//       month: "short",
-//       day: "numeric",
-//     });
-
-//   const totalParticipants = booking.participants.reduce(
-//     (acc, p) => acc + p.quantity,
-//     0
-//   );
-
-//   return (
-//     <div className="bg-white border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200 overflow-hidden h-full flex flex-col group">
-//       {/* Header: Image + Status */}
-//       <div className="relative h-32 overflow-hidden">
-//         <Image
-//           src={mainImage}
-//           alt={booking.activity.title}
-//           fill
-//           className="object-cover group-hover:scale-105 transition-transform duration-300"
-//         />
-//         <div className="absolute top-2 right-2">
-//           <div
-//             className={`px-2 py-1 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text} flex items-center gap-1`}
-//           >
-//             <div className={`w-2 h-2 rounded-full ${statusStyle.dot}`} />
-//             {booking.status}
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Content */}
-//       <div className="p-4 flex-1 flex flex-col">
-//         <div className="flex items-start justify-between mb-2">
-//           <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-tight flex-1 pr-2">
-//             {booking.activity.title}
-//           </h3>
-//           <button className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-//             <MoreHorizontal className="w-4 h-4" />
-//           </button>
-//         </div>
-
-//         <div className="space-y-2 mb-3">
-//           <div className="flex items-center gap-2 text-xs text-gray-600">
-//             <Calendar className="w-3 h-3" />
-//             <span>{formatDate(booking.date)}</span>
-//             <Clock className="w-3 h-3" />
-//             <span>{booking.timeSlot}</span>
-//           </div>
-
-//           <div className="flex items-center justify-between text-xs">
-//             <span className="flex items-center gap-1 text-gray-500">
-//               <Users className="w-3 h-3" />
-//               {totalParticipants} Pax
-//             </span>
-//             <span className="font-medium text-gray-900">
-//               {booking.totalAmount} {booking.currency}
-//             </span>
-//           </div>
-//         </div>
-
-//         <div className="flex items-center gap-2 mt-auto pt-2 border-t border-gray-100">
-//           <div className="text-xs text-gray-500 truncate flex-1">
-//             {booking.user?.name || booking.user?.email}
-//           </div>
-//           <button
-//             onClick={() => router.push(`/admin/booking/${booking._id}`)}
-//             className="text-xs bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
-//           >
-//             View
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// const AdminBookings = () => {
-//   const [page, setPage] = useState(1);
-//   const [limit] = useState(12);
-//   const [search, setSearch] = useState("");
-//   const [statusFilter, setStatusFilter] = useState("all");
-//   const [debouncedSearch, setDebouncedSearch] = useState("");
-
-//   const router = useRouter();
-
-//   // Debounce search
-//   useEffect(() => {
-//     const timer = setTimeout(() => {
-//       setDebouncedSearch(search);
-//     }, 400);
-
-//     return () => clearTimeout(timer);
-//   }, [search]);
-
-//   // Reset page when filters change
-//   const resetToPage1 = useCallback(() => {
-//     if (page !== 1) setPage(1);
-//   }, [page]);
-
-//   useEffect(() => {
-//     resetToPage1();
-//   }, [debouncedSearch, statusFilter, resetToPage1]);
-
-//   const { data, isLoading, isError, isFetching } = useGetBookingsQuery({
-//     page,
-//     limit,
-//     search: debouncedSearch || undefined,
-//     status: statusFilter !== "all" ? statusFilter : undefined,
-//   });
-
-//   const bookings = data?.bookings || [];
-//   const pagination = data?.pagination;
-
-//   const handlePageChange = (newPage) => {
-//     if (newPage >= 1 && newPage <= (pagination?.totalPages || 1)) {
-//       setPage(newPage);
-//     }
-//   };
-
-//   const statusFilters = [
-//     { key: "all", label: "All", count: data?.pagination?.totalBookings },
-//     { key: "pending", label: "Pending" },
-//     { key: "confirmed", label: "Confirmed" },
-//     { key: "paid", label: "Paid" },
-//     { key: "cancelled", label: "Cancelled" },
-//     { key: "completed", label: "Completed" },
-//   ];
-
-//   return (
-//     <div className="min-h-screen bg-gray-50 p-6">
-//       <div className="max-w-7xl mx-auto">
-//         {/* Header */}
-//         <div className="mb-8">
-//           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-//             All Bookings
-//           </h1>
-//           <p className="text-gray-600">
-//             Manage all customer bookings ({data?.pagination?.totalBookings || 0}{" "}
-//             total)
-//           </p>
-//         </div>
-
-//         {/* Filters & Search */}
-//         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-//           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-//             {/* Search */}
-//             <div className="relative flex-1 max-w-md">
-//               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-//               <input
-//                 type="text"
-//                 placeholder="Search by activity, customer name or email..."
-//                 value={search}
-//                 onChange={(e) => setSearch(e.target.value)}
-//                 className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 focus:ring-2 focus:ring-slate-100 transition-all"
-//               />
-//             </div>
-
-//             {/* Status Filters */}
-//             <div className="flex flex-wrap gap-2">
-//               {statusFilters.map((filter) => (
-//                 <button
-//                   key={filter.key}
-//                   onClick={() => {
-//                     setStatusFilter(filter.key);
-//                     resetToPage1();
-//                   }}
-//                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-//                     statusFilter === filter.key
-//                       ? "bg-slate-900 text-white shadow-sm"
-//                       : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
-//                   }`}
-//                 >
-//                   {filter.label}
-//                   {filter.count !== undefined && (
-//                     <span className="ml-1 text-xs bg-white/80 text-slate-600 px-2 py-0.5 rounded-full">
-//                       {filter.count}
-//                     </span>
-//                   )}
-//                 </button>
-//               ))}
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Bookings Grid */}
-//         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-//           {isLoading || isFetching ? (
-//             <div className="p-12 text-center">
-//               <Loader2 className="w-8 h-8 text-slate-500 animate-spin mx-auto mb-4" />
-//               <p className="text-gray-600">Loading bookings...</p>
-//             </div>
-//           ) : isError ? (
-//             <div className="p-12 text-center border-t border-gray-200">
-//               <p className="text-red-600 text-lg font-medium mb-2">
-//                 Failed to load bookings
-//               </p>
-//               <button
-//                 onClick={() => window.location.reload()}
-//                 className="text-slate-700 hover:text-slate-900 font-medium"
-//               >
-//                 Try again
-//               </button>
-//             </div>
-//           ) : bookings.length === 0 ? (
-//             <div className="p-12 text-center border-t border-gray-200">
-//               <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-//                 <Search className="w-8 h-8 text-gray-400" />
-//               </div>
-//               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-//                 No bookings found
-//               </h3>
-//               <p className="text-gray-600 mb-4">
-//                 Try adjusting your search or filter criteria
-//               </p>
-//             </div>
-//           ) : (
-//             <>
-//               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-6">
-//                 {bookings.map((booking) => (
-//                   <BookingCard key={booking._id} booking={booking} />
-//                 ))}
-//               </div>
-
-//               {/* Pagination */}
-//               {pagination && (
-//                 <div className="border-t border-gray-200 px-6 py-4 bg-gray-50">
-//                   <div className="flex items-center justify-between">
-//                     <div className="text-sm text-gray-600">
-//                       Showing {(page - 1) * limit + 1} to{" "}
-//                       {Math.min(page * limit, pagination.totalBookings)} of{" "}
-//                       {pagination.totalBookings} bookings
-//                     </div>
-//                     <div className="flex items-center gap-2">
-//                       <button
-//                         onClick={() => handlePageChange(page - 1)}
-//                         disabled={!pagination.hasPrevPage}
-//                         className="p-2 text-gray-500 hover:text-slate-900 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
-//                       >
-//                         <ChevronLeft className="w-4 h-4" />
-//                       </button>
-//                       <span className="px-3 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg shadow-sm">
-//                         Page {page} of {pagination.totalPages}
-//                       </span>
-//                       <button
-//                         onClick={() => handlePageChange(page + 1)}
-//                         disabled={!pagination.hasNextPage}
-//                         className="p-2 text-gray-500 hover:text-slate-900 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
-//                       >
-//                         <ChevronRight className="w-4 h-4" />
-//                       </button>
-//                     </div>
-//                   </div>
-//                 </div>
-//               )}
-//             </>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default AdminBookings;
-
-
-
 "use client";
 
 import React, { useState } from "react";
-import { 
-  useGetBookingsQuery, 
-  useDeleteBookingMutation, 
-  useUpdateBookingStatusMutation 
+import {
+  useGetBookingsQuery,
+  useGetBookingByIdQuery,
+  useDeleteBookingMutation,
+  useUpdateBookingStatusMutation,
 } from "@/features/booking/bookingApi";
-import { 
-  Ticket, Trash2, Eye, Calendar, User, 
-  MapPin, CreditCard, Car, Clock3, 
-  X, CheckCircle2, Phone, Mail, ChevronDown, 
-  Info, ShieldCheck, AlertCircle, RefreshCw
+import {
+  Ticket,
+  Trash2,
+  Eye,
+  Calendar,
+  User,
+  MapPin,
+  CreditCard,
+  Car,
+  Clock3,
+  X,
+  Phone,
+  Mail,
+  ShieldCheck,
+  Package,
+  Image as ImageIcon,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
+// ─────────────────────────────────────────────
+// Helpers
+// ─────────────────────────────────────────────
+const fmtDate = (d) =>
+  new Date(d).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+const STATUS_STYLES = {
+  confirmed: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  cancelled: "bg-red-50 text-red-500 border-red-200",
+  pending: "bg-amber-50 text-amber-600 border-amber-200",
+};
+
+const PAY_STATUS_STYLES = {
+  paid: "bg-emerald-50 text-emerald-600 border-emerald-200",
+  awaiting_payment: "bg-amber-50 text-amber-600 border-amber-200",
+  pending: "bg-blue-50 text-blue-600 border-blue-200",
+  failed: "bg-red-50 text-red-500 border-red-200",
+};
+
+const PAY_STATUS_LABELS = {
+  paid: "Paid",
+  awaiting_payment: "Awaiting payment",
+  pending: "Pending",
+  failed: "Failed",
+};
+
+function getFieldDef(pkg, fieldId) {
+  return pkg?.bookingFields?.find((f) => f._id === fieldId) || null;
+}
+
+// ─────────────────────────────────────────────
+// Stat Card
+// ─────────────────────────────────────────────
+function StatCard({ label, value, color = "text-slate-900" }) {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 px-5 py-4 shadow-sm">
+      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+        {label}
+      </p>
+      <p className={`text-2xl font-black ${color}`}>{value}</p>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Detail Modal (fetches fresh data via getBookingById)
+// ─────────────────────────────────────────────
+function BookingDetailModal({ bookingId, onClose }) {
+  const { data, isLoading } = useGetBookingByIdQuery(bookingId, {
+    skip: !bookingId,
+  });
+
+  const b = data?.data;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      <div className="relative bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden border border-slate-100 animate-in zoom-in-95 duration-200">
+        {/* Modal Header */}
+        <div className="bg-slate-900 px-6 py-5 flex justify-between items-center text-white">
+          <div className="flex items-center gap-4">
+            <div className="w-11 h-11 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
+              <Ticket size={20} className="text-white" />
+            </div>
+            <div>
+              <h3 className="text-base font-black tracking-tight">
+                Voucher Details
+              </h3>
+              <p className="text-blue-400 text-[10px] font-bold uppercase tracking-widest mt-0.5">
+                {b?.bookingReference || "—"}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div
+          className="p-6 max-h-[78vh] overflow-y-auto"
+          style={{
+            scrollbarWidth: "thin",
+            scrollbarColor: "#cbd5e1 #f8fafc",
+          }}
+        >
+          {isLoading || !b ? (
+            <div className="py-16 text-center text-slate-400 font-bold animate-pulse uppercase tracking-widest text-xs">
+              Loading booking details…
+            </div>
+          ) : (
+            <>
+              {/* Activity Images */}
+              {b.activity?.Images?.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mb-6">
+                  {b.activity.Images.slice(0, 4).map((img, i) => (
+                    <img
+                      key={i}
+                      src={img.secure_url}
+                      alt=""
+                      className="w-full h-16 object-cover rounded-xl"
+                      onError={(e) => (e.currentTarget.style.display = "none")}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Guest & Transport */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                {/* Guest */}
+                <div>
+                  <SectionLabel icon={<User size={12} />}>
+                    Guest details
+                  </SectionLabel>
+                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                    <p className="font-black text-slate-900 text-sm mb-2">
+                      {b.guestDetails.firstName} {b.guestDetails.lastName}
+                    </p>
+                    <InfoRow icon={<Mail size={12} className="text-blue-500" />}>
+                      {b.guestDetails.email}
+                    </InfoRow>
+                    <InfoRow
+                      icon={<Phone size={12} className="text-emerald-500" />}
+                    >
+                      +{b.guestDetails.whatsappPhone}
+                    </InfoRow>
+                  </div>
+                </div>
+
+                {/* Pickup & SUV */}
+                <div>
+                  <SectionLabel icon={<MapPin size={12} />}>
+                    Pickup & transport
+                  </SectionLabel>
+                  <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4">
+                    <p className="text-xs font-bold text-slate-500 mb-1">
+                      Pickup hotel
+                    </p>
+                    <p className="text-sm font-black text-slate-800 uppercase mb-3">
+                      {b.guestDetails.pickupHotel || "Not specified"}
+                    </p>
+                    {b.extras?.isSuvSelected ? (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-100 rounded-xl text-[10px] font-black uppercase">
+                        <Car size={11} />
+                        {b.extras.suvModel} × {b.extras.suvCount}
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-slate-400 font-bold uppercase">
+                        No SUV transfer
+                      </p>
+                    )}
+                    {b.extras?.notes && (
+                      <p className="mt-2 text-[11px] text-slate-500 italic">
+                        Note: {b.extras.notes}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule */}
+              <div className="mb-6">
+                <SectionLabel icon={<Calendar size={12} />}>
+                  Tour schedule
+                </SectionLabel>
+                <div className="bg-slate-50 rounded-2xl border border-slate-100 p-4 flex flex-wrap gap-6">
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+                      Date
+                    </p>
+                    <p className="text-sm font-black text-slate-900">
+                      {fmtDate(b.date)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+                      Time slot
+                    </p>
+                    <p className="text-sm font-black text-slate-900">
+                      {b.timeSlot}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+                      Booked on
+                    </p>
+                    <p className="text-sm font-black text-slate-900">
+                      {fmtDate(b.createdAt)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mb-1">
+                      Status
+                    </p>
+                    <span
+                      className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
+                        STATUS_STYLES[b.status] || STATUS_STYLES.pending
+                      }`}
+                    >
+                      {b.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Package & Booking Fields */}
+              <div className="mb-6">
+                <SectionLabel icon={<Package size={12} />}>
+                  Package & booking fields
+                </SectionLabel>
+                <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                  {/* Package header */}
+                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-100">
+                    <p className="text-xs font-black text-slate-800">
+                      {b.packageId?.name || "—"}
+                    </p>
+                    {b.packageId?.price && (
+                      <p className="text-[10px] text-slate-400 font-bold mt-0.5">
+                        Base price: AED {b.packageId.price}
+                      </p>
+                    )}
+                  </div>
+                  {/* Booking fields */}
+                  {b.bookingFields?.length > 0 ? (
+                    b.bookingFields.map((bf, i) => {
+                      const def = getFieldDef(b.packageId, bf.fieldId);
+                      return (
+                        <div
+                          key={i}
+                          className="flex justify-between items-center px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50/60"
+                        >
+                          <div>
+                            <p className="text-xs font-bold text-slate-700">
+                              {def?.name || bf.fieldId}
+                            </p>
+                            <p className="text-[10px] text-slate-400">
+                              {def?.unit}
+                              {def?.price > 0 && ` · AED ${def.price} each`}
+                            </p>
+                          </div>
+                          <span className="text-sm font-black text-slate-900">
+                            {bf.value}
+                          </span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <p className="px-4 py-3 text-xs text-slate-400">
+                      No booking fields
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Addons */}
+              <div className="mb-6">
+                <SectionLabel icon={<Package size={12} />}>Addons</SectionLabel>
+                <div className="rounded-2xl border border-slate-100 overflow-hidden">
+                  {b.addons?.length > 0 ? (
+                    b.addons.map((a, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center px-4 py-3 border-b border-slate-50 last:border-0"
+                      >
+                        <p className="text-xs font-bold text-slate-700">
+                          {a.title}
+                        </p>
+                        <span className="text-xs font-black text-slate-800">
+                          × {a.quantity} · AED {a.price}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="px-4 py-3 text-xs text-slate-400">
+                      No addons selected
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Inclusions / Exclusions */}
+              <div className="mb-6">
+                <SectionLabel icon={<ShieldCheck size={12} />}>
+                  Inclusions & exclusions
+                </SectionLabel>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+                    <p className="text-[10px] font-black text-emerald-700 uppercase mb-2">
+                      Included
+                    </p>
+                    <ul className="space-y-1">
+                      {b.whatInclude?.map((inc, i) => (
+                        <li
+                          key={i}
+                          className="text-[11px] font-bold text-emerald-900/70 flex items-start gap-1.5"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                          {inc}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="bg-red-50 border border-red-100 rounded-2xl p-4">
+                    <p className="text-[10px] font-black text-red-600 uppercase mb-2">
+                      Excluded
+                    </p>
+                    <ul className="space-y-1">
+                      {b.whatExclude?.map((exc, i) => (
+                        <li
+                          key={i}
+                          className="text-[11px] font-bold text-red-900/70 flex items-start gap-1.5"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                          {exc}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div>
+                <SectionLabel icon={<CreditCard size={12} />}>
+                  Financial summary
+                </SectionLabel>
+                <div className="border border-slate-100 rounded-3xl overflow-hidden">
+                  <div className="divide-y divide-slate-50">
+                    {b.amountBreakdown?.map((row, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center px-5 py-4"
+                      >
+                        <div>
+                          <p className="text-sm font-black text-slate-700 uppercase tracking-tight">
+                            {row.label}
+                          </p>
+                          <p className="text-[10px] font-bold text-slate-400 mt-0.5">
+                            Qty: {row.quantity}
+                          </p>
+                        </div>
+                        <span className="font-black text-slate-900 text-base">
+                          AED {row.amount}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-slate-900 px-5 py-5 flex justify-between items-center text-white">
+                    <div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        Total amount payable
+                      </p>
+                      <span
+                        className={`inline-block mt-1.5 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
+                          PAY_STATUS_STYLES[b.paymentStatus] ||
+                          PAY_STATUS_STYLES.pending
+                        }`}
+                      >
+                        {PAY_STATUS_LABELS[b.paymentStatus] || b.paymentStatus}
+                      </span>
+                      <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase">
+                        {b.paymentMethod === "pay_later"
+                          ? "Pay at counter"
+                          : "Paid online"}
+                      </p>
+                    </div>
+                    <span className="text-3xl font-black">
+                      AED {b.totalAmount}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionLabel({ icon, children }) {
+  return (
+    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5 mb-3">
+      {icon}
+      {children}
+    </h4>
+  );
+}
+
+function InfoRow({ icon, children }) {
+  return (
+    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 mt-1.5">
+      {icon}
+      {children}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Main Page
+// ─────────────────────────────────────────────
 export default function AdminBookingsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // id to confirm
 
-  // RTK Query hooks
-  const { data, isLoading, isFetching } = useGetBookingsQuery({ page, search, status });
-  const [deleteBooking] = useDeleteBookingMutation();
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateBookingStatusMutation();
-  
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const { data, isLoading, isFetching } = useGetBookingsQuery({
+    page,
+    search,
+    status,
+  });
+  const [deleteBooking, { isLoading: isDeleting }] = useDeleteBookingMutation();
+  const [updateStatus, { isLoading: isUpdating }] =
+    useUpdateBookingStatusMutation();
 
   const bookings = data?.data || [];
   const pagination = data?.pagination || {};
 
+  // Stats derived from current page (server ideally returns totals, adjust if needed)
+  const confirmed = bookings.filter((b) => b.status === "confirmed").length;
+  const pending = bookings.filter((b) => b.status === "pending").length;
+  const revenue = bookings.reduce((s, b) => s + (b.totalAmount || 0), 0);
+
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this booking record permanently?")) {
-      try {
-        await deleteBooking(id).unwrap();
-        toast.success("Booking deleted from database");
-      } catch (err) {
-        toast.error("Failed to delete booking");
-      }
+    try {
+      await deleteBooking(id).unwrap();
+      toast.success("Booking deleted");
+      setDeleteConfirm(null);
+    } catch {
+      toast.error("Failed to delete booking");
     }
   };
 
   const handleStatusChange = async (id, newStatus) => {
     try {
       await updateStatus({ id, status: newStatus }).unwrap();
-      toast.success(`Status updated to ${newStatus}`);
-    } catch (err) {
+      toast.success(`Status → ${newStatus}`);
+    } catch {
       toast.error("Status update failed");
     }
   };
 
-  const getStatusColor = (s) => {
-    switch (s) {
-      case 'confirmed': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-      case 'cancelled': return 'bg-red-50 text-red-600 border-red-100';
-      default: return 'bg-amber-50 text-amber-600 border-amber-100';
-    }
-  };
-
-  if (isLoading) return <div className="p-20 text-center animate-pulse font-black text-slate-400 uppercase tracking-widest">Loading Records...</div>;
+  if (isLoading)
+    return (
+      <div className="p-20 text-center animate-pulse font-black text-slate-400 uppercase tracking-widest text-xs">
+        Loading records…
+      </div>
+    );
 
   return (
     <div className="p-6 bg-[#F8FAFC] min-h-screen">
-      {/* HEADER & FILTERS */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Reservations</h1>
-          <p className="text-slate-500 text-sm font-bold uppercase tracking-wider mt-1">Manage Activity & Tour Bookings</p>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Reservations
+          </h1>
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
+            Manage activity & tour bookings
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <input 
-            type="text" 
-            placeholder="Search Reference or Email..." 
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 shadow-sm"
-            onChange={(e) => setSearch(e.target.value)}
+          <input
+            type="text"
+            placeholder="Search ref, name, email…"
+            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 shadow-sm bg-white"
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
-          <select 
-            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 outline-none shadow-sm"
-            onChange={(e) => setStatus(e.target.value)}
+          <select
+            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 outline-none shadow-sm bg-white"
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
           >
-            <option value="all">All Status</option>
+            <option value="all">All status</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
             <option value="cancelled">Cancelled</option>
@@ -397,218 +529,271 @@ export default function AdminBookingsPage() {
         </div>
       </div>
 
-      {/* TABLE SECTION */}
-      <div className="bg-white rounded-[24px] shadow-sm border border-slate-200 overflow-hidden">
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+        <StatCard
+          label="Total (this page)"
+          value={bookings.length}
+          color="text-blue-600"
+        />
+        <StatCard
+          label="Confirmed"
+          value={confirmed}
+          color="text-emerald-600"
+        />
+        <StatCard label="Pending" value={pending} color="text-amber-600" />
+        <StatCard
+          label="Revenue"
+          value={`AED ${revenue.toLocaleString()}`}
+          color="text-slate-900"
+        />
+      </div>
+
+      {/* ── Table ── */}
+      <div
+        className={`bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden transition-opacity ${
+          isFetching ? "opacity-60" : "opacity-100"
+        }`}
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-slate-900 text-white">
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Booking Ref</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Customer Detail</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Activity & Package</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Tour Schedule</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-center">Status</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest">Total</th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-center">Actions</th>
+                {[
+                  "Booking ref",
+                  "Customer",
+                  "Activity & package",
+                  "Schedule",
+                  "Status",
+                  "Total",
+                  "Actions",
+                ].map((h, i) => (
+                  <th
+                    key={h}
+                    className={`p-5 text-[10px] font-black uppercase tracking-widest ${
+                      i >= 4 ? "text-center" : ""
+                    }`}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {bookings.map((item) => (
-                <tr key={item._id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="p-5">
-                    <span className="font-mono font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg text-xs border border-blue-100">
-                      {item.bookingReference}
-                    </span>
-                  </td>
-                  <td className="p-5">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-slate-900 text-[13px]">{item.guestDetails.firstName} {item.guestDetails.lastName}</span>
-                      <span className="text-[11px] text-slate-400 font-bold tracking-tight">{item.guestDetails.email}</span>
-                    </div>
-                  </td>
-                  <td className="p-5">
-                    <div className="max-w-[200px]">
-                      <p className="text-[12px] font-black text-slate-800 line-clamp-1 uppercase">{item.activityName}</p>
-                      <p className="text-[10px] font-bold text-blue-500 uppercase mt-0.5">{item.variantName}</p>
-                    </div>
-                  </td>
-                  <td className="p-5 text-[11px] text-slate-600 font-bold">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Calendar size={13} className="text-slate-400" />
-                      {new Date(item.date).toLocaleDateString('en-GB')}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock3 size={13} className="text-slate-400" />
-                      {item.timeSlot}
-                    </div>
-                  </td>
-                  <td className="p-5 text-center">
-                    <select 
-                      value={item.status}
-                      onChange={(e) => handleStatusChange(item._id, e.target.value)}
-                      disabled={isUpdating}
-                      className={`text-[10px] font-black uppercase px-3 py-1.5 rounded-full border outline-none cursor-pointer ${getStatusColor(item.status)}`}
-                    >
-                      <option value="pending">Pending</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="cancelled">Cancelled</option>
-                    </select>
-                  </td>
-                  <td className="p-5">
-                    <div className="text-[14px] font-black text-slate-900">${item.totalAmount}</div>
-                    <div className={`text-[9px] font-black uppercase mt-0.5 ${item.paymentMethod === 'pay_later' ? 'text-amber-500' : 'text-emerald-500'}`}>
-                      {item.paymentMethod === 'pay_later' ? 'PAY AT COUNTER' : 'PAID ONLINE'}
-                    </div>
-                  </td>
-                  <td className="p-5">
-                    <div className="flex items-center justify-center gap-2">
-                      <button 
-                        onClick={() => setSelectedBooking(item)}
-                        className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(item._id)}
-                        className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+            <tbody className="divide-y divide-slate-50">
+              {bookings.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="py-16 text-center text-slate-400 text-sm font-bold"
+                  >
+                    No bookings found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                bookings.map((item) => (
+                  <tr
+                    key={item._id}
+                    className="hover:bg-slate-50/60 transition-colors"
+                  >
+                    {/* Ref */}
+                    <td className="p-5">
+                      <span className="font-mono font-black text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg text-xs border border-blue-100">
+                        {item.bookingReference}
+                      </span>
+                    </td>
+
+                    {/* Customer */}
+                    <td className="p-5">
+                      <p className="font-black text-slate-900 text-[13px]">
+                        {item.guestDetails.firstName} {item.guestDetails.lastName}
+                      </p>
+                      <p className="text-[11px] text-slate-400 font-bold mt-0.5">
+                        {item.guestDetails.email}
+                      </p>
+                      <p className="text-[10px] text-slate-300 font-bold mt-0.5">
+                        +{item.guestDetails.whatsappPhone}
+                      </p>
+                    </td>
+
+                    {/* Activity */}
+                    <td className="p-5 max-w-[210px]">
+                      <p className="text-[12px] font-black text-slate-800 line-clamp-1 uppercase">
+                        {item.activityName}
+                      </p>
+                      <p className="text-[10px] font-bold text-blue-500 uppercase mt-0.5">
+                        {item.variantName}
+                      </p>
+                    </td>
+
+                    {/* Schedule */}
+                    <td className="p-5 text-[11px] text-slate-600 font-bold">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <Calendar size={12} className="text-slate-400" />
+                        {new Date(item.date).toLocaleDateString("en-GB")}
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Clock3 size={12} className="text-slate-400" />
+                        {item.timeSlot}
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="p-5 text-center">
+                      <select
+                        value={item.status}
+                        onChange={(e) =>
+                          handleStatusChange(item._id, e.target.value)
+                        }
+                        disabled={isUpdating}
+                        className={`text-[10px] font-black uppercase px-3 py-1.5 rounded-full border outline-none cursor-pointer ${
+                          STATUS_STYLES[item.status] || STATUS_STYLES.pending
+                        }`}
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </td>
+
+                    {/* Total */}
+                    <td className="p-5 text-center">
+                      <p className="text-[14px] font-black text-slate-900">
+                        AED {item.totalAmount}
+                      </p>
+                      <p
+                        className={`text-[9px] font-black uppercase mt-0.5 ${
+                          item.paymentMethod === "pay_later"
+                            ? "text-amber-500"
+                            : "text-emerald-500"
+                        }`}
+                      >
+                        {item.paymentMethod === "pay_later"
+                          ? "Pay at counter"
+                          : "Paid online"}
+                      </p>
+                      <span
+                        className={`inline-block mt-1 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                          PAY_STATUS_STYLES[item.paymentStatus] ||
+                          PAY_STATUS_STYLES.pending
+                        }`}
+                      >
+                        {PAY_STATUS_LABELS[item.paymentStatus] ||
+                          item.paymentStatus}
+                      </span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="p-5">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => setSelectedBookingId(item._id)}
+                          className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                          title="View details"
+                        >
+                          <Eye size={15} />
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(item._id)}
+                          className="p-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
+                          title="Delete booking"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* VIEW DETAILS MODAL */}
-      {selectedBooking && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setSelectedBooking(null)}></div>
-          
-          <div className="relative bg-white w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-slate-200">
-            {/* Modal Header */}
-            <div className="bg-slate-900 p-6 flex justify-between items-center text-white">
-              <div className="flex items-center gap-4">
-                 <div className="w-12 h-12 rounded-2xl bg-blue-500 flex items-center justify-center shrink-0">
-                    <Ticket size={24} className="text-white" />
-                 </div>
-                 <div>
-                    <h3 className="text-lg font-black tracking-tight">Voucher Details</h3>
-                    <p className="text-blue-400 text-xs font-bold uppercase tracking-widest">{selectedBooking.bookingReference}</p>
-                 </div>
-              </div>
-              <button onClick={() => setSelectedBooking(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X size={24} /></button>
-            </div>
+      {/* ── Pagination ── */}
+      {pagination.pages > 1 && (
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center disabled:opacity-40 hover:border-slate-400 transition-all"
+          >
+            <ChevronLeft size={15} />
+          </button>
 
-            <div className="p-8 max-h-[75vh] overflow-y-auto custom-scrollbar bg-white">
-              {/* Customer Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <User size={14} /> Passenger Contact
-                  </h4>
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                    <p className="text-base font-black text-slate-900 mb-2">{selectedBooking.guestDetails.firstName} {selectedBooking.guestDetails.lastName}</p>
-                    <div className="space-y-1.5 text-xs font-bold text-slate-500 uppercase">
-                        <div className="flex items-center gap-2"><Mail size={14} className="text-blue-500" /> {selectedBooking.guestDetails.email}</div>
-                        <div className="flex items-center gap-2"><Phone size={14} className="text-emerald-500" /> {selectedBooking.guestDetails.whatsappPhone}</div>
-                    </div>
-                  </div>
-                </div>
+          {Array.from({ length: pagination.pages }, (_, i) => i + 1).map(
+            (p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-9 h-9 rounded-xl font-black text-xs transition-all ${
+                  page === p
+                    ? "bg-slate-900 text-white"
+                    : "bg-white text-slate-400 border border-slate-200 hover:border-slate-400"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
 
-                <div className="space-y-4">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <MapPin size={14} /> Stay Info
-                  </h4>
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 h-full">
-                    <p className="text-sm font-black text-slate-700 leading-relaxed uppercase">
-                      {selectedBooking.guestDetails.pickupHotel || "Standard Pickup"}
-                    </p>
-                    {selectedBooking.extras.isSuvSelected && (
-                        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-orange-100 text-orange-700 rounded-lg text-[10px] font-black uppercase">
-                            <Car size={12} /> {selectedBooking.extras.suvModel} (x{selectedBooking.extras.suvCount})
-                        </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+          <button
+            onClick={() => setPage((p) => Math.min(pagination.pages, p + 1))}
+            disabled={page === pagination.pages}
+            className="w-9 h-9 rounded-xl border border-slate-200 bg-white text-slate-500 flex items-center justify-center disabled:opacity-40 hover:border-slate-400 transition-all"
+          >
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      )}
 
-              {/* Snapshots: Inclusions */}
-              <div className="mb-8">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <ShieldCheck size={14} /> Voucher Snapshots
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                        <p className="text-[10px] font-black text-emerald-700 mb-2 uppercase">Included</p>
-                        <ul className="text-[11px] space-y-1 font-bold text-emerald-900/70">
-                            {selectedBooking.whatInclude?.map((inc, i) => <li key={i}>• {inc}</li>)}
-                        </ul>
-                    </div>
-                    <div className="bg-red-50 p-4 rounded-2xl border border-red-100">
-                        <p className="text-[10px] font-black text-red-700 mb-2 uppercase">Excluded</p>
-                        <ul className="text-[11px] space-y-1 font-bold text-red-900/70">
-                            {selectedBooking.whatExclude?.map((exc, i) => <li key={i}>• {exc}</li>)}
-                        </ul>
-                    </div>
-                </div>
-              </div>
+      {/* ── Detail Modal ── */}
+      {selectedBookingId && (
+        <BookingDetailModal
+          bookingId={selectedBookingId}
+          onClose={() => setSelectedBookingId(null)}
+        />
+      )}
 
-              {/* Price Breakdown */}
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <CreditCard size={14} /> Financial Summary
-                </h4>
-                <div className="border border-slate-100 rounded-3xl overflow-hidden shadow-inner">
-                    <div className="p-6 space-y-4 bg-white">
-                        {selectedBooking.amountBreakdown?.map((item, idx) => (
-                            <div key={idx} className="flex justify-between items-center">
-                                <div>
-                                    <p className="text-sm font-black text-slate-700 uppercase tracking-tight">{item.label}</p>
-                                    <p className="text-[10px] font-bold text-slate-400">UNIT QUANTITY: {item.quantity}</p>
-                                </div>
-                                <span className="font-black text-slate-900 text-base">${item.amount}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="bg-slate-900 p-6 flex justify-between items-center text-white">
-                        <div>
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount Payable</p>
-                            <p className="text-xs font-bold text-emerald-400 uppercase mt-1 flex items-center gap-1">
-                                {selectedBooking.paymentStatus}
-                            </p>
-                        </div>
-                        <span className="text-3xl font-black">${selectedBooking.totalAmount}</span>
-                    </div>
-                </div>
-              </div>
+      {/* ── Delete Confirm Modal ── */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm"
+            onClick={() => setDeleteConfirm(null)}
+          />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-7 max-w-sm w-full border border-slate-100">
+            <h3 className="text-base font-black text-slate-900 mb-2">
+              Delete booking?
+            </h3>
+            <p className="text-sm text-slate-500 mb-6 leading-relaxed">
+              This will permanently remove the record from the system. This
+              action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                className="px-5 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirm)}
+                disabled={isDeleting}
+                className="px-5 py-2 rounded-xl bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors disabled:opacity-60"
+              >
+                {isDeleting ? "Deleting…" : "Delete"}
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Pagination Container */}
-      <div className="mt-8 flex justify-center gap-2">
-         {Array.from({ length: pagination.pages || 1 }, (_, i) => (
-            <button
-              key={i+1}
-              onClick={() => setPage(i+1)}
-              className={`w-10 h-10 rounded-xl font-black text-xs transition-all ${page === i+1 ? 'bg-slate-900 text-white' : 'bg-white text-slate-400 border border-slate-200 hover:border-slate-400'}`}
-            >
-              {i+1}
-            </button>
-         ))}
-      </div>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f8fafc; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      `}} />
+      <style>{`
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #f8fafc; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+      `}</style>
     </div>
   );
 }

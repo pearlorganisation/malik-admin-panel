@@ -14,6 +14,14 @@ export const pageApi = baseApi.injectEndpoints({
       query: (slug) => `/pages/${slug}`,
       providesTags: (res, err, slug) => [{ type: "Pages", id: slug }],
     }),
+    updatePage: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/pages/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Pages"],
+    }),
     deletePage: builder.mutation({
       query: (id) => ({ url: `/pages/${id}`, method: "DELETE" }),
       invalidatesTags: ["Pages"],
@@ -21,4 +29,10 @@ export const pageApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useCreatePageMutation, useGetPagesQuery, useGetPageBySlugQuery, useDeletePageMutation } = pageApi;
+export const { 
+  useCreatePageMutation, 
+  useGetPagesQuery, 
+  useGetPageBySlugQuery, 
+  useUpdatePageMutation,
+  useDeletePageMutation 
+} = pageApi;
