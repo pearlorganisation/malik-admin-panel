@@ -14,7 +14,8 @@ import {
   CheckCircle,
     Edit,       
   Trash2,     
-  Eye         
+  Eye,
+  PlusCircle      
 } from 'lucide-react';
 import toast from 'react-hot-toast'; 
 import AddPackageModal from './AddPackageModal';
@@ -67,6 +68,7 @@ console.log("pak",packages)
     { id: 'itinerary', label: 'Itinerary', icon: Clock },
     { id: 'logistics', label: 'Logistics', icon: MapPin },
     { id: 'dining', label: 'Dining', icon: Utensils },
+     { id: 'addons', label: 'Addons', icon: PlusCircle }, 
     { id: 'media', label: 'Media', icon: ImageIcon },
     { id: 'packages', label: 'Packages', icon: Layers },
   ];
@@ -182,6 +184,10 @@ console.log("pak",packages)
                         label="Location"
                         value={activity.placeId?.name}
                       />
+                      <InfoItem 
+  label="Total Addons" 
+  value={activity.addons?.length || '0'} 
+/>
                       <InfoItem
                         label="Time Slots"
                         value={
@@ -190,6 +196,7 @@ console.log("pak",packages)
                             : '—'
                         }
                       />
+                      
                     </InfoGrid>
                   </SectionCard>
 
@@ -378,6 +385,40 @@ console.log("pak",packages)
               </div>
             )}
 
+{/* ================= ADDONS ================= */}
+{activeTab === 'addons' && (
+  <SectionCard 
+    title={`Extra Addons (${activity.addons?.length || 0})`} 
+    icon={PlusCircle}
+  >
+    {activity.addons && activity.addons.length > 0 ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {activity.addons.map((addon) => (
+          <div 
+            key={addon._id} 
+            className="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm hover:border-blue-200 transition"
+          >
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-gray-900 uppercase">
+                {addon.name}
+              </span>
+              <span className="text-[10px] text-gray-400">
+                Max Quantity: {addon.max || 1}
+              </span>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-bold text-blue-600">
+                AED {addon.price}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <EmptyState message="No addons available for this activity." />
+    )}
+  </SectionCard>
+)}
             {/* ================= PACKAGES ================= */}
             {/* {activeTab === 'packages' && (
               <SectionCard
