@@ -35,6 +35,6 @@ export const authApi = createApi({
 
 export const {
   useLoginMutation,
-  useLogoutMutation,   // ✅ correct hook
+  useLogoutMutation,   
   useGetProfileQuery,
 } = authApi;

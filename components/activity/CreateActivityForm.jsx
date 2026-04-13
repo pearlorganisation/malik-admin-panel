@@ -284,6 +284,7 @@ console.log("activitid",duplicateActivityData)
     video: null, // Will hold File OR existing video object
     packages: [], // Added to hold variants
     originalActivityId: null,
+    addons: [],
     isActive: true,
   });
 
@@ -347,6 +348,7 @@ console.log("activitid",duplicateActivityData)
         images: mappedImages,
         video: mappedVideo,
         packages: mappedPackages,
+        addons: act.addons?.map(a => typeof a === 'object' ? a._id : a) || [],
         isActive: true,
       }));
     }
@@ -390,7 +392,7 @@ console.log("activitid",duplicateActivityData)
       
       // Send Packages
       formDataToSend.append('packages', JSON.stringify(formData.packages || []));
-
+  formDataToSend.append('addons', JSON.stringify(formData.addons || []));
       // Handling Images (Separating new files vs existing duplicated URLs)
       const existingImages = [];
       if (formData.images?.length) {
