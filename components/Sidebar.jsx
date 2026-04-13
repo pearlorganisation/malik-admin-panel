@@ -14,7 +14,8 @@
     X,
     Menu,
     Ticket,
-    FileText 
+    FileText,
+    Hotel 
   } from "lucide-react";
   import Link from "next/link";
   import { usePathname, useRouter } from "next/navigation";
@@ -32,6 +33,7 @@
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/activities", label: "Activity", icon: BarChart3 },
     { href: "/activities/create", label: "Create Activity", icon: BarChart3 },
+      { href: "/admin/hotels", label: "Where to Stay", icon: MapPin },
     { href: "/admin/places", label: "Places", icon: MapPin },
     { href: "/admin/spots", label: "Spots", icon: Map },
     { href: "/admin/inquiry", label: "Inquiries", icon: HelpCircle },
