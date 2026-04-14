@@ -8,7 +8,8 @@ import {
 } from "@/features/spot/spotApi";
 import { useGetCategoriesQuery } from "@/features/category/categoryApi";
 // 1. ADDED: Import Places API to link "Where to Stay"
-import { useGetAllPlacesQuery } from "@/features/place/placeApi"; 
+// import { useGetAllPlacesQuery } from "@/features/place/placeApi"; 
+import { useGetHotelsQuery } from "@/features/hotel/hotelApi"; 
 
 export default function ManageSpots() {
   const { data, isLoading } = useGetAllSpotsQuery();
@@ -18,10 +19,12 @@ export default function ManageSpots() {
 
   const { data: categoryResponse, isLoading: categoryLoading } = useGetCategoriesQuery({ page: 1, limit: 100 });
   // 2. ADDED: Fetch all Places
-  const { data: placesResponse, isLoading: placesLoading } = useGetAllPlacesQuery();
+  // const { data: placesResponse, isLoading: placesLoading } = useGetAllPlacesQuery();
+   const { data: hotelsResponse, isLoading: hotelsLoading } = useGetHotelsQuery();
 
   const categories = categoryResponse?.data || [];
-  const places = placesResponse?.data || []; // The list of cities
+  // const places = placesResponse?.data || []; // The list of cities
+  const hotels = hotelsResponse?.data || []; // Linked Hotels list
 
   const [editingSpot, setEditingSpot] = useState(null);
 
@@ -55,17 +58,28 @@ export default function ManageSpots() {
   };
 
   // 3. ADDED: Toggle function for Where to Stay selection
-  const handleTogglePlace = (placeId) => {
+  // const handleTogglePlace = (placeId) => {
+  //   setForm((prev) => {
+  //     const isSelected = prev.whereToStay.includes(placeId);
+  //     if (isSelected) {
+  //       return { ...prev, whereToStay: prev.whereToStay.filter(id => id !== placeId) };
+  //     } else {
+  //       return { ...prev, whereToStay: [...prev.whereToStay, placeId] };
+  //     }
+  //   });
+  // };
+
+
+   const handleToggleHotel = (hotelId) => {
     setForm((prev) => {
-      const isSelected = prev.whereToStay.includes(placeId);
+      const isSelected = prev.whereToStay.includes(hotelId);
       if (isSelected) {
-        return { ...prev, whereToStay: prev.whereToStay.filter(id => id !== placeId) };
+        return { ...prev, whereToStay: prev.whereToStay.filter(id => id !== hotelId) };
       } else {
-        return { ...prev, whereToStay: [...prev.whereToStay, placeId] };
+        return { ...prev, whereToStay: [...prev.whereToStay, hotelId] };
       }
     });
   };
-
   const handleNestedChange = (field, index, subfield) => (e) => {
     const value = e.target.value;
     setForm((prev) => {
@@ -117,7 +131,7 @@ export default function ManageSpots() {
     formData.append("thingsToDo", JSON.stringify(form.thingsToDo.filter((item) => item.title && item.description)));
     formData.append("howToGetThere", JSON.stringify(form.howToGetThere.filter((item) => item.mode && item.description)));
     formData.append("visitorInfo", JSON.stringify(form.visitorInfo));
-    // 4. Send Where to Stay array to backend
+      // 4. Send Where to Stay (Hotel IDs) to backend
     formData.append("whereToStay", JSON.stringify(form.whereToStay));
 
     try {
@@ -149,8 +163,8 @@ export default function ManageSpots() {
         address: spot.visitorInfo?.address || "",
         directionsLink: spot.visitorInfo?.directionsLink || "",
       },
-      // 5. Ensure linked places IDs are loaded into form
-      whereToStay: spot.whereToStay?.map(p => p._id || p) || [],
+        // 5. Populate Hotel IDs for editing
+      whereToStay: spot.whereToStay?.map(h => h._id || h) || [],
     });
   };
 
@@ -233,7 +247,7 @@ export default function ManageSpots() {
             </section>
 
             {/* 6. ADDED: Where To Stay Section (Selection UI) */}
-            <section>
+            {/* <section>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Where To Stay (Linked Places)</h3>
               <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                 {placesLoading ? (
@@ -260,8 +274,45 @@ export default function ManageSpots() {
                   </div>
                 )}
               </div>
-            </section>
+            </section> */}
 
+ {/* 6. FIXED: Where To Stay Section (Hotel Selection UI) */}
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Where To Stay (Linked Hotels)</h3>
+                <span className="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded-md">
+                   {form.whereToStay.length} Selected
+                </span>
+              </div>
+              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner">
+                {hotelsLoading ? (
+                  <p className="text-sm text-blue-500 animate-pulse italic font-medium">Fetching available hotels...</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    {hotels.map((hotel) => {
+                      const isSelected = form.whereToStay.includes(hotel._id);
+                      return (
+                        <button
+                          key={hotel._id}
+                          type="button"
+                          onClick={() => handleToggleHotel(hotel._id)}
+                          className={`px-4 py-3 rounded-xl text-xs font-bold border transition-all duration-300 ${
+                            isSelected 
+                              ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200 scale-105" 
+                              : "bg-white border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600"
+                          }`}
+                        >
+                          {hotel.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {hotels.length === 0 && !hotelsLoading && (
+                   <p className="text-xs text-slate-400 italic">No hotels found. Create hotels first to link them.</p>
+                )}
+              </div>
+            </section>
             {/* Visitor Information */}
             <section>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Visitor Information</h3>
