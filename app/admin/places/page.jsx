@@ -7,6 +7,8 @@ import {
   useDeletePlaceMutation,
 } from "@/features/place/placeApi";
 import { useGetAllSpotsQuery } from "@/features/spot/spotApi";
+import { useGetHotelsQuery } from "@/features/hotel/hotelApi"; 
+import { toast } from "react-hot-toast";
 import {
   Edit,
   Trash2,
@@ -23,6 +25,7 @@ import {
   Star,
   Eye,
   Globe,
+  CheckCircle2,
 } from "lucide-react";
 
 const TABS = [
@@ -36,6 +39,7 @@ const TABS = [
 
 export default function ManagePlaces() {
   const { data: placesData, isLoading: loadingPlaces, refetch } = useGetAllPlacesQuery();
+  console.log("data",placesData);
   const [createPlace, { isLoading: creating }] = useCreatePlaceMutation();
   const [updatePlace, { isLoading: updating }] = useUpdatePlaceMutation();
   const [deletePlace] = useDeletePlaceMutation();
@@ -389,11 +393,23 @@ useEffect(() => {
                 </div>
               )}
 
-              {activeTab === "stay" && (
+              {/* {activeTab === "stay" && (
                 <div className="animate-in slide-in-from-right-4">
                   <SpotSelector label="Accommodations" formKey="whereToStay" selected={form.whereToStay} toggle={toggleSpot} icon={<Bed className="text-indigo-600" />} />
                 </div>
-              )}
+              )} */}
+              {activeTab === "stay" && (
+  <div className="animate-in slide-in-from-right-4">
+    {/* Notice we are calling HotelSelector now */}
+    <HotelSelector 
+      label="Accommodations" 
+      formKey="whereToStay" 
+      selected={form.whereToStay} 
+      toggle={toggleSpot} 
+      icon={<Bed className="text-indigo-600" />} 
+    />
+  </div>
+)}
             </div>
 
             <div className="flex justify-end mt-12 pt-8 border-t border-slate-100">
@@ -689,21 +705,53 @@ function ViewModal({ place, onClose }) {
                   </div>
                 </section>
 
-                {/* Where to Stay */}
-                <section>
-                  <SectionHeader title="Preferred Stays" icon={Bed} />
-                  <div className="grid grid-cols-1 gap-3">
-                    {place.whereToStay?.map((stay) => (
-                      <div key={stay._id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                        <img src={stay.image} className="w-12 h-12 rounded-xl object-cover" alt="" />
-                        <div>
-                          <p className="text-sm font-bold text-slate-900 leading-none">{stay.title}</p>
-                          <p className="text-[10px] text-slate-400 mt-1 font-bold uppercase tracking-wider">{stay.location}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+              {/* Preferred Stays Section in ViewModal */}
+<section>
+  <SectionHeader title="Preferred Stays" icon={Bed} />
+  
+  {/* Check if whereToStay exists and has items */}
+  {place.whereToStay && place.whereToStay.length > 0 ? (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+      {place.whereToStay.map((hotel) => (
+        <div 
+          key={hotel._id} 
+          className="group p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-blue-200 transition-all flex items-center gap-4"
+        >
+          {/* Hotel Icon/Thumb */}
+          <div className="w-10 h-10 bg-white rounded-xl border border-slate-100 flex items-center justify-center text-blue-600 shadow-sm">
+            <Bed size={18} />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h4 className="font-bold text-slate-900 text-sm truncate">
+              {hotel.name}
+            </h4>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[10px] font-black text-blue-600 uppercase tracking-tighter">
+                ₹{hotel.pricePerNight} <span className="text-slate-400 font-medium">/ night</span>
+              </span>
+              {/* Optional: Show rating if it's available in your JSON */}
+              {hotel.rating?.average > 0 && (
+                <div className="flex items-center gap-0.5 text-orange-500 text-[10px] font-bold">
+                  <Star size={8} fill="currentColor" /> {hotel.rating.average}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <CheckCircle2 size={16} className="text-emerald-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
+      ))}
+    </div>
+  ) : (
+    /* Fallback if no data is available */
+    <div className="mt-4 p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+        No preferred stays linked to this destination
+      </p>
+    </div>
+  )}
+</section>
               </div>
 
             </div>
@@ -758,6 +806,36 @@ function SpotSelector({ label, category, formKey, selected, toggle, icon, classN
               <p className="font-bold text-xs text-slate-900 truncate">{spot.title || spot.name}</p>
             </div>
             {spot.image && <img src={spot.image} className="w-8 h-8 object-cover rounded-lg shadow-sm" />}
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function HotelSelector({ label, formKey, selected, toggle, icon }) {
+  const [search, setSearch] = useState("");
+  const { data, isLoading } = useGetHotelsQuery({ limit: 100, search: search || undefined });
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">{icon} {label}</h3>
+      <input
+        type="text"
+        placeholder="Search hotels..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
+      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto custom-scrollbar">
+        {isLoading ? <p className="text-xs p-4 text-slate-400 animate-pulse">Loading hotels...</p> : 
+          (data?.data || []).map((hotel) => (
+          <label key={hotel._id} className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${selected.includes(hotel._id) ? "border-indigo-500 bg-indigo-50/50" : "border-slate-100 hover:border-slate-200"}`}>
+            <input type="checkbox" checked={selected.includes(hotel._id)} onChange={() => toggle(formKey, hotel._id)} className="w-4 h-4 text-indigo-600 rounded" />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-xs text-slate-900 truncate">{hotel.name}</p>
+              <p className="text-[10px] text-slate-400 font-bold">₹{hotel.pricePerNight} / Night</p>
+            </div>
           </label>
         ))}
       </div>
