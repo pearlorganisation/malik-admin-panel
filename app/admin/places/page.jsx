@@ -780,13 +780,22 @@ function SpotSelector({ label, category, formKey, selected, toggle, icon, classN
     <div className={className}>
       <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">{icon} {label}</h3>
       <div className="relative mb-4">
-        <input
+        {/* <input
           type="text"
           placeholder={`Search ${label}...`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-4 pr-10 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
-        />
+        /> */}
+
+<input
+  type="text"
+  placeholder={`Search ${label}...`}
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+  className="w-full pl-4 pr-10 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
+/>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto custom-scrollbar">
         {isLoading ? <p className="text-xs p-4 text-slate-400">Loading spots...</p> : (data?.data || []).map((spot) => (
@@ -815,30 +824,144 @@ function SpotSelector({ label, category, formKey, selected, toggle, icon, classN
 
 function HotelSelector({ label, formKey, selected, toggle, icon }) {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useGetHotelsQuery({ limit: 100, search: search || undefined });
+  
+  const { data, isLoading, isFetching } = useGetHotelsQuery({ 
+    search: search.trim() || undefined 
+  });
+
+  const hotelList = data?.data || [];
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">{icon} {label}</h3>
-      <input
-        type="text"
-        placeholder="Search hotels..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto custom-scrollbar">
-        {isLoading ? <p className="text-xs p-4 text-slate-400 animate-pulse">Loading hotels...</p> : 
-          (data?.data || []).map((hotel) => (
-          <label key={hotel._id} className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${selected.includes(hotel._id) ? "border-indigo-500 bg-indigo-50/50" : "border-slate-100 hover:border-slate-200"}`}>
-            <input type="checkbox" checked={selected.includes(hotel._id)} onChange={() => toggle(formKey, hotel._id)} className="w-4 h-4 text-indigo-600 rounded" />
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-xs text-slate-900 truncate">{hotel.name}</p>
-              <p className="text-[10px] text-slate-400 font-bold">₹{hotel.pricePerNight} / Night</p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          {icon} {label}
+        </h3>
+        {selected.length > 0 && (
+          <span className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+            {selected.length} Selected
+          </span>
+        )}
+      </div>
+
+      {/* Search Input */}
+      <div className="relative group">
+        <input
+          type="text"
+          placeholder="Search by name, city or address..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-4 focus:ring-indigo-50 focus:border-indigo-500 outline-none transition-all pr-10"
+        />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+           {isFetching ? <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div> : <Globe size={16} />}
+        </div>
+      </div>
+
+      {/* Results Container */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto custom-scrollbar p-1">
+        {isLoading ? (
+          // Better Loading State
+          Array(4).fill(0).map((_, i) => (
+            <div key={i} className="h-16 bg-slate-50 rounded-2xl animate-pulse border border-slate-100" />
+          ))
+        ) : hotelList.length > 0 ? (
+          hotelList.map((hotel) => (
+            <label 
+              key={hotel._id} 
+              className={`group flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                selected.includes(hotel._id) 
+                ? "border-indigo-600 bg-indigo-50/50 shadow-sm shadow-indigo-100" 
+                : "border-slate-100 hover:border-indigo-200 hover:bg-white"
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                selected.includes(hotel._id) ? "bg-indigo-600 border-indigo-600" : "border-slate-300"
+              }`}>
+                {selected.includes(hotel._id) && <CheckCircle2 size={14} className="text-white" />}
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-xs text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                  {hotel.name}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                   <span className="text-[10px] text-slate-500 font-medium flex items-center gap-0.5">
+                     <MapPin size={10} /> {hotel.location?.city || "UAE"}
+                   </span>
+                   <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
+                     ₹{hotel.pricePerNight.toLocaleString()}
+                   </span>
+                </div>
+              </div>
+
+              <input 
+                type="checkbox" 
+                className="hidden"
+                checked={selected.includes(hotel._id)} 
+                onChange={() => toggle(formKey, hotel._id)} 
+              />
+            </label>
+          ))
+        ) : (
+          // Cleaner "No Results" State
+          <div className="col-span-full py-10 flex flex-col items-center justify-center bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+            <div className="bg-white p-3 rounded-full shadow-sm mb-3 text-slate-400">
+              <Bed size={24} />
             </div>
-          </label>
-        ))}
+            <p className="text-sm font-bold text-slate-600">No hotels found</p>
+            <p className="text-xs text-slate-400 mt-1">Try searching with a different name</p>
+            {search && (
+              <button 
+                onClick={() => setSearch("")}
+                className="mt-4 text-xs font-bold text-indigo-600 hover:underline"
+              >
+                Clear search
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
 }
+// function HotelSelector({ label, formKey, selected, toggle, icon }) {
+//   const [search, setSearch] = useState("");
+//   const { data, isLoading } = useGetHotelsQuery({search: search.trim()});
+// const hotelList = data?.data || [];
+//   return (
+//     <div className="space-y-4">
+//       <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">{icon} {label}</h3>
+//       {/* <input
+//         type="text"
+//         placeholder="Search hotels..."
+//         value={search}
+//         onChange={(e) => setSearch(e.target.value)}
+//         className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
+//       /> */}
+// <input
+//   type="text"
+//   placeholder="Search hotels..."
+//   value={search}
+//   onChange={(e) => setSearch(e.target.value)}
+//   // Ye line add karein:
+//   onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+//   className="w-full px-4 py-2.5 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 outline-none"
+// />
+//       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-64 overflow-y-auto custom-scrollbar">
+//         {isLoading ? <p className="text-xs p-4 text-slate-400 animate-pulse">Loading hotels...</p> : 
+//           (data?.data || []).map((hotel) => (
+//           <label key={hotel._id} className={`flex items-center gap-3 p-3 rounded-2xl border-2 cursor-pointer transition-all ${selected.includes(hotel._id) ? "border-indigo-500 bg-indigo-50/50" : "border-slate-100 hover:border-slate-200"}`}>
+//             <input type="checkbox" checked={selected.includes(hotel._id)} onChange={() => toggle(formKey, hotel._id)} className="w-4 h-4 text-indigo-600 rounded" />
+//             <div className="flex-1 min-w-0">
+//               <p className="font-bold text-xs text-slate-900 truncate">{hotel.name}</p>
+//               <p className="text-[10px] text-slate-400 font-bold">₹{hotel.pricePerNight} / Night</p>
+//             </div>
+//           </label>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
