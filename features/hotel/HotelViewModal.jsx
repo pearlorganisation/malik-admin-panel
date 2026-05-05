@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, MapPin, IndianRupee, Star, Info, Calendar, Clock, 
   Phone, Mail, Bed, Users, Image as ImageIcon, ShieldCheck, 
-  Map as MapIcon, Tag, MessageSquare 
+  Map as MapIcon, Tag, MessageSquare ,Globe 
 } from "lucide-react";
 
 const HotelViewModal = ({ id, isOpen, onClose }) => {
@@ -168,6 +168,22 @@ const HotelViewModal = ({ id, isOpen, onClose }) => {
                                 <p className="font-bold text-sm truncate">{hotel?.contact?.email || "N/A"}</p>
                              </div>
                           </div>
+                          {hotel?.referwebsiteurl && (
+  <div className="flex items-center gap-3 pt-2 border-t border-slate-800">
+     <Globe size={18} className="text-blue-400"/>
+     <div className="overflow-hidden">
+        <p className="text-[10px] text-slate-400 uppercase font-black">Official Website</p>
+        <a 
+          href={hotel.referwebsiteurl} 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="font-bold text-sm truncate text-blue-300 hover:text-blue-100 transition-colors flex items-center gap-1"
+        >
+          Visit Website
+        </a>
+     </div>
+  </div>
+)}
                        </div>
                     </div>
                   </div>

@@ -31,6 +31,7 @@ const HotelForm = ({ id }) => {
   const [form, setForm] = useState({
     name: "",
     description: "",
+      referwebsiteurl: "",
     pricePerNight: "",
     discountPrice: "",
     totalRooms: "",
@@ -164,6 +165,13 @@ const HotelForm = ({ id }) => {
           <Card title="General Information" icon={<Bed className="text-blue-500" />}>
             <div className="space-y-6">
               <InputField label="Hotel Name" name="name" value={form.name} onChange={handleChange} required placeholder="The Royal Palace" />
+               <InputField 
+      label="Refer Website URL" 
+      name="referwebsiteurl" 
+      value={form.referwebsiteurl} 
+      onChange={handleChange} 
+      placeholder="https://example.com" 
+    />
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-slate-400 uppercase tracking-wider ml-1">About Property</label>
                 <textarea name="description" rows={5} value={form.description} onChange={handleChange} className="w-full p-4 rounded-2xl bg-slate-50 border border-slate-200 focus:bg-white focus:ring-4 focus:ring-blue-50 outline-none transition-all resize-none" placeholder="Describe the luxury and comfort..." />
