@@ -118,6 +118,11 @@ deletePackage: builder.mutation({
   }),
   invalidatesTags: ['Activity', 'Package'], 
 }),
+
+getUniqueActivityNames: builder.query({
+  query: () => `/activity/unique-names`,
+  providesTags: ['Activity'],
+}),
   }),
 });
 
@@ -134,5 +139,6 @@ export const {
   useDeletePackageMutation,
   useGetPackagesByActivityQuery,
   useGetAllPackagesQuery,
-  useGetPackageByIdQuery
+  useGetPackageByIdQuery,
+  useGetUniqueActivityNamesQuery
 } = activityApi;

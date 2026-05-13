@@ -6,6 +6,7 @@ import ViewActivityModal from '@/components/activity/modals/ViewActivityModal';
 // import EditActivityModal from '@/components/activity/modals/EditActivityModal';
 import ConfirmDeleteModal from '@/components/activity/modals/ConfirmDeleteModal';
 import EditActivityModalNew from '@/components/activity/modals/EditActivityModalNew';
+import { toast } from 'react-hot-toast';
 import { useRouter } from "next/navigation";
 
 export default function ActivitiesPage() {
@@ -65,7 +66,24 @@ export default function ActivitiesPage() {
 
   const startRecord = (currentPage - 1) * limit + 1;
   const endRecord = Math.min(currentPage * limit, pagination.total);
-
+const handleDuplicateCheck = (activity) => {
+  // Aapke JSON response mein 'sourceActivityId' field hai
+  // Agar ye null nahi hai, matlab ye khud ek duplicate hai
+  if (activity.sourceActivityId) {
+    toast.error("This activity is already a duplicate entry. To maintain data integrity, you cannot create another duplicate of a duplicate.", {
+      duration: 4000,
+      position: 'top-right',
+      style: {
+        border: '1px solid #fecaca',
+        padding: '16px',
+        color: '#b91c1c',
+        fontWeight: 'bold'
+      },
+    });
+    return;
+  }
+  router.push(`/activities/create?duplicateId=${activity._id}`);
+};
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -216,7 +234,8 @@ export default function ActivitiesPage() {
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                               </button>
                               <button
-  onClick={() => router.push(`/activities/create?duplicateId=${activity._id}`)}
+  // onClick={() => router.push(`/activities/create?duplicateId=${activity._id}`)}
+  onClick={() => handleDuplicateCheck(activity)} 
   className="text-gray-400 hover:text-green-600 transition-colors"
   title="Duplicate Activity"
 >

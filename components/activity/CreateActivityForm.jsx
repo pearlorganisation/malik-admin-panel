@@ -250,6 +250,7 @@ import Step5BBQBuffet from '@/components/activity/steps/Step5BBQBuffet';
 import Step6PrivateSUV from '@/components/activity/steps/Step6PrivateSUV';
 import Step7MediaUpload from '@/components/activity/steps/Step7MediaUpload';
 import Step8ReviewSubmit from '@/components/activity/steps/Step8ReviewSubmit';
+import { useRouter } from 'next/navigation';
 import { 
   useCreateActivityMutation, 
   useGetActivityByIdQuery 
@@ -263,7 +264,7 @@ export default function CreateActivityForm() {
   const [createActivity, { isLoading }] = useCreateActivityMutation();
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-
+const router = useRouter();
   // Fetch Duplicate Data
   const { data: duplicateActivityData, isLoading: isFetchingDuplicate } = useGetActivityByIdQuery(
     duplicateId, 
@@ -272,6 +273,8 @@ export default function CreateActivityForm() {
 console.log("activitid",duplicateActivityData)
   const [formData, setFormData] = useState({
     name: '',
+    language: '',     
+  isDuplicate: false,
     categoryId: '',
     placeId: '',
     timeSlots: [],
@@ -323,7 +326,9 @@ console.log("activitid",duplicateActivityData)
       setFormData(prevData => ({
         ...prevData,
          originalActivityId: act._id,
-        name: act.name ? `${act.name} (Copy)` : 'New Activity (Copy)',
+        // name: act.name ? `${act.name} (Copy)` : 'New Activity (Copy)',
+        name: act.name || 'New Activity',
+         language: act.languageId?._id || act.languageId || '',
         categoryId: act.categoryId?._id || act.categoryId || '',
         placeId: act.placeId?._id || act.placeId || '',
         timeSlots: act.timeSlots || [],
@@ -375,11 +380,17 @@ console.log("activitid",duplicateActivityData)
 
       // Basic Text & Arrays
       formDataToSend.append('name', formData.name);
+       formDataToSend.append('language', formData.language); 
+  formDataToSend.append('isDuplicate', formData.isDuplicate);
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
-       if (formData.originalActivityId) {
-    formDataToSend.append('activityId', formData.originalActivityId);
-  }
+  //      if (formData.originalActivityId) {
+  //   formDataToSend.append('activityId', formData.originalActivityId);
+  // }
+     if (formData.isDuplicate && formData.originalActivityId) {
+      // Backend controller 'sourceActivityId' expect kar raha hai
+      formDataToSend.append('sourceActivityId', formData.originalActivityId);
+    }
       formDataToSend.append("timeSlots", JSON.stringify(formData.timeSlots));
       formDataToSend.append('isActive', formData.isActive);
 
@@ -417,11 +428,14 @@ console.log("activitid",duplicateActivityData)
           public_id: formData.video.public_id 
         }));
       }
-
+console.log("lang",formDataToSend)
       await createActivity(formDataToSend).unwrap();
       setSuccessMessage(duplicateId ? 'Activity duplicated successfully!' : 'Activity created successfully!');
 
-      setTimeout(() => { window.location.reload(); }, 2000);
+      // setTimeout(() => { window.location.reload(); }, 2000);
+      setTimeout(() => {
+  router.push('/admin/activities');
+}, 2000);
     } catch (err) {
       setError(err?.data?.message || err.message || 'Failed to create activity');
     }
