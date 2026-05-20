@@ -237,10 +237,277 @@
 
 
 
+// 'use client';
+
+// import React, { useState, useEffect } from 'react';
+// import { useSearchParams } from 'next/navigation';
+// import StepIndicator from '@/components/activity/step-indicator';
+// import Step1BasicInfo from '@/components/activity/steps/Step1BasicInfo';
+// import Step2Experience from '@/components/activity/steps/Step2Experience';
+// import Step3Itinerary from '@/components/activity/steps/Step3Itinerary';
+// import Step4InfoAndLogistics from '@/components/activity/steps/Step4InfoAndLogistics';
+// import Step5BBQBuffet from '@/components/activity/steps/Step5BBQBuffet';
+// import Step6PrivateSUV from '@/components/activity/steps/Step6PrivateSUV';
+// import Step7MediaUpload from '@/components/activity/steps/Step7MediaUpload';
+// import Step8ReviewSubmit from '@/components/activity/steps/Step8ReviewSubmit';
+// import { useRouter } from 'next/navigation';
+// import { 
+//   useCreateActivityMutation, 
+//   useUpdateActivityMutation,
+//   useGetActivityByIdQuery 
+// } from '@/features/activity/activityApi';
+
+// export default function CreateActivityForm() {
+//   const searchParams = useSearchParams();
+//   const router = useRouter();
+//   const duplicateId = searchParams.get("duplicateId");
+//   const editId = searchParams.get("editId"); // Edit ID pakda
+//   const isEditMode = !!editId;
+//   const [currentStep, setCurrentStep] = useState(1);
+//   const [createActivity, { isLoading: isCreating }] = useCreateActivityMutation();
+//    const [updateActivity, { isLoading: isUpdating }] = useUpdateActivityMutation();
+//   const isLoading = isCreating || isUpdating;
+//   const [error, setError] = useState('');
+//   const [successMessage, setSuccessMessage] = useState('');
+//   // Fetch Duplicate Data
+//   // const { data: duplicateActivityData, isLoading: isFetchingDuplicate } = useGetActivityByIdQuery(
+//   //   duplicateId, 
+//   //   { skip: !duplicateId }
+//   // );
+//   const { data: activityData, isLoading: isFetching } = useGetActivityByIdQuery(
+//     editId || duplicateId, 
+//     { skip: !editId && !duplicateId }
+//   );
+// // console.log("activitid",duplicateActivityData)
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     language: '',     
+//   isDuplicate: false,
+//     categoryId: '',
+//     placeId: '',
+//     timeSlots: [],
+//     Experience: { title: '', note: '', description: '', highlights: [] },
+//     Itinerary: [],
+//     InfoAndLogistics: { pickupZone: { description: '', note: '', mapLink: '' }, keyInfo: [], essentialGuide: [] },
+//     BBQ_BUFFET: { title: '', description: '', fields: [] },
+//     PrivateSUV: { available: false, fee: 0, model: 'SUV' },
+//     images: [], // Will hold Files OR existing image objects
+//     video: null, // Will hold File OR existing video object
+//     packages: [], // Added to hold variants
+//     originalActivityId: null,
+//     addons: [],
+//     isActive: true,
+//   });
+
+//   // AUTO-FILL LOGIC FOR DUPLICATION
+//   useEffect(() => {
+//     if (duplicateActivityData?.data) {
+//       const act = duplicateActivityData.data;
+//       console.log("dddd", duplicateActivityData);
+
+//       // Map existing images to be preserved
+//       const mappedImages = act.Images ? act.Images.map(img => ({
+//         preview: img.secure_url,
+//         secure_url: img.secure_url,
+//         public_id: img.public_id,
+//         isExisting: true
+//       })) : [];
+
+//       // Map existing video
+//       const mappedVideo = act.Video?.secure_url ? {
+//         preview: act.Video.secure_url,
+//         secure_url: act.Video.secure_url,
+//         public_id: act.Video.public_id,
+//         isExisting: true
+//       } : null;
+
+//       // Map packages (remove old DB IDs so backend creates new ones)
+//       const mappedPackages = act.packages ? act.packages.map(pkg => {
+//         const { _id, activityId, createdAt, updatedAt, __v, ...rest } = pkg;
+//         const cleanedBookingFields = rest.bookingFields?.map(bf => {
+//            const { _id, ...bfRest } = bf;
+//            return bfRest;
+//         }) || [];
+//         return { ...rest, bookingFields: cleanedBookingFields };
+//       }) : [];
+
+//       setFormData(prevData => ({
+//         ...prevData,
+//          originalActivityId: act._id,
+//         name: act.name ? `${act.name} (Copy)` : 'New Activity (Copy)',
+//         // name: act.name || 'New Activity',
+//          language: act.languageId?._id || act.languageId || '',
+//         categoryId: act.categoryId?._id || act.categoryId || '',
+//         placeId: act.placeId?._id || act.placeId || '',
+//         timeSlots: act.timeSlots || [],
+//         Experience: {
+//           title: act.Experience?.title || '',
+//           note: act.Experience?.note || '',
+//           description: act.Experience?.description || '',
+//           highlights: act.Experience?.highlights || [],
+//         },
+//         Itinerary: act.Itinerary || [],
+//         InfoAndLogistics: {
+//           pickupZone: {
+//             description: act.InfoAndLogistics?.pickupZone?.description || '',
+//             note: act.InfoAndLogistics?.pickupZone?.note || '',
+//             mapLink: act.InfoAndLogistics?.pickupZone?.mapLink || '',
+//           },
+//           keyInfo: act.InfoAndLogistics?.keyInfo || [],
+//           essentialGuide: act.InfoAndLogistics?.essentialGuide || [],
+//         },
+//         BBQ_BUFFET: act.BBQ_BUFFET || { title: '', description: '', fields: [] },
+//         PrivateSUV: act.PrivateSUV || { available: false, fee: 0, model: 'SUV' },
+//         images: mappedImages,
+//         video: mappedVideo,
+//         packages: mappedPackages,
+//         addons: act.addons?.map(a => typeof a === 'object' ? a._id : a) || [],
+//         isActive: true,
+//       }));
+//     }
+//   }, [duplicateActivityData]);
+
+//   const steps = [
+//     { number: 1, label: 'Basic Info' }, { number: 2, label: 'Experience' },
+//     { number: 3, label: 'Itinerary' }, { number: 4, label: 'Info & Logistics' },
+//     { number: 5, label: 'BBQ Buffet' }, { number: 6, label: 'Private SUV' },
+//     { number: 7, label: 'Media Upload' }, { number: 8, label: 'Review & Submit' },
+//   ];
+
+//   const handleNextStep = () => { if (currentStep < steps.length) { setCurrentStep(currentStep + 1); window.scrollTo(0, 0); } };
+//   const handlePreviousStep = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo(0, 0); } };
+//   const handleFormDataChange = (newData) => setFormData(prev => ({ ...prev, ...newData }));
+
+//   // SUBMIT PAYLOAD HANDLER
+//   const handleSubmit = async () => {
+//     setError('');
+//     setSuccessMessage('');
+
+//     try {
+//       const formDataToSend = new FormData();
+
+//       // Basic Text & Arrays
+//       formDataToSend.append('name', formData.name);
+//        formDataToSend.append('language', formData.language); 
+//   formDataToSend.append('isDuplicate', formData.isDuplicate);
+//       formDataToSend.append('categoryId', formData.categoryId);
+//       formDataToSend.append('placeId', formData.placeId);
+//   //      if (formData.originalActivityId) {
+//   //   formDataToSend.append('activityId', formData.originalActivityId);
+//   // }
+//      if (formData.isDuplicate && formData.originalActivityId) {
+//       // Backend controller 'sourceActivityId' expect kar raha hai
+//       formDataToSend.append('sourceActivityId', formData.originalActivityId);
+//     }
+//       formDataToSend.append("timeSlots", JSON.stringify(formData.timeSlots));
+//       formDataToSend.append('isActive', formData.isActive);
+
+//       // Objects
+//       formDataToSend.append('Experience', JSON.stringify(formData.Experience));
+//       formDataToSend.append('Itinerary', JSON.stringify(formData.Itinerary));
+//       formDataToSend.append('InfoAndLogistics', JSON.stringify(formData.InfoAndLogistics));
+//       formDataToSend.append('BBQ_BUFFET', JSON.stringify(formData.BBQ_BUFFET));
+//       formDataToSend.append('PrivateSUV', JSON.stringify(formData.PrivateSUV));
+      
+//       // Send Packages
+//       formDataToSend.append('packages', JSON.stringify(formData.packages || []));
+//   formDataToSend.append('addons', JSON.stringify(formData.addons || []));
+//       // Handling Images (Separating new files vs existing duplicated URLs)
+//       const existingImages = [];
+//       if (formData.images?.length) {
+//         formData.images.forEach((image) => {
+//           if (image instanceof File) {
+//             formDataToSend.append('images', image); // New upload
+//           } else if (image.isExisting) {
+//             existingImages.push({ secure_url: image.secure_url, public_id: image.public_id });
+//           }
+//         });
+//       }
+//       if (existingImages.length > 0) {
+//         formDataToSend.append('existingImages', JSON.stringify(existingImages));
+//       }
+
+//       // Handling Video (Separating new file vs existing duplicated URL)
+//       if (formData.video instanceof File) {
+//         formDataToSend.append('video', formData.video);
+//       } else if (formData.video?.isExisting) {
+//         formDataToSend.append('existingVideo', JSON.stringify({ 
+//           secure_url: formData.video.secure_url, 
+//           public_id: formData.video.public_id 
+//         }));
+//       }
+// console.log("lang",formDataToSend)
+//       await createActivity(formDataToSend).unwrap();
+//       setSuccessMessage(duplicateId ? 'Activity duplicated successfully!' : 'Activity created successfully!');
+
+//       // setTimeout(() => { window.location.reload(); }, 2000);
+//       setTimeout(() => {
+//   router.push('/admin/activities');
+// }, 2000);
+//     } catch (err) {
+//       setError(err?.data?.message || err.message || 'Failed to create activity');
+//     }
+//   };
+
+//   const renderStep = () => {
+//     const commonProps = { formData, onFormDataChange: handleFormDataChange, onNext: handleNextStep, onPrevious: handlePreviousStep };
+//     switch (currentStep) {
+//       case 1: return <Step1BasicInfo {...commonProps} />;
+//       case 2: return <Step2Experience {...commonProps} />;
+//       case 3: return <Step3Itinerary {...commonProps} />;
+//       case 4: return <Step4InfoAndLogistics {...commonProps} />;
+//       case 5: return <Step5BBQBuffet {...commonProps} />;
+//       case 6: return <Step6PrivateSUV {...commonProps} />;
+//       case 7: return <Step7MediaUpload {...commonProps} />;
+//       case 8: return <Step8ReviewSubmit {...commonProps} onSubmit={handleSubmit} isLoading={isLoading} />;
+//       default: return null;
+//     }
+//   };
+
+//   if (duplicateId && isFetchingDuplicate) return <div className="min-h-screen flex items-center justify-center"><p>Loading Duplicate Data...</p></div>;
+
+//   return (
+//     <div className="min-h-screen bg-linear-to-br from-slate-100 to-slate-200 py-8 px-4">
+//       <div className="max-w-4xl mx-auto">
+//         <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border-l-4 border-blue-500">
+//           <h1 className="text-3xl font-bold text-gray-900 mb-2">
+//             {duplicateId ? "Duplicate Activity" : "Create New Activity"}
+//           </h1>
+//           <p className="text-gray-600">Fill in all details to create a comprehensive activity package</p>
+//         </div>
+
+//         {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>}
+//         {successMessage && <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg">{successMessage}</div>}
+
+//         <StepIndicator currentStep={currentStep} steps={steps} />
+
+//         <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+//           {renderStep()}
+//         </div>
+
+//         <div className="flex gap-4 justify-between">
+//           {currentStep > 1 && (
+//             <button onClick={handlePreviousStep} disabled={isLoading} className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">
+//               ← Previous Step
+//             </button>
+//           )}
+//           {currentStep < steps.length && (
+//             <button onClick={handleNextStep} disabled={isLoading} className="ml-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
+//               Next Step →
+//             </button>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import StepIndicator from '@/components/activity/step-indicator';
 import Step1BasicInfo from '@/components/activity/steps/Step1BasicInfo';
 import Step2Experience from '@/components/activity/steps/Step2Experience';
@@ -250,31 +517,38 @@ import Step5BBQBuffet from '@/components/activity/steps/Step5BBQBuffet';
 import Step6PrivateSUV from '@/components/activity/steps/Step6PrivateSUV';
 import Step7MediaUpload from '@/components/activity/steps/Step7MediaUpload';
 import Step8ReviewSubmit from '@/components/activity/steps/Step8ReviewSubmit';
-import { useRouter } from 'next/navigation';
 import { 
   useCreateActivityMutation, 
+  useUpdateActivityMutation,
   useGetActivityByIdQuery 
 } from '@/features/activity/activityApi';
+import toast from 'react-hot-toast';
 
 export default function CreateActivityForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  
   const duplicateId = searchParams.get("duplicateId");
+  const editId = searchParams.get("editId"); 
+  const isEditMode = !!editId;
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [createActivity, { isLoading }] = useCreateActivityMutation();
+  const [createActivity, { isLoading: isCreating }] = useCreateActivityMutation();
+  const [updateActivity, { isLoading: isUpdating }] = useUpdateActivityMutation();
+  
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-const router = useRouter();
-  // Fetch Duplicate Data
-  const { data: duplicateActivityData, isLoading: isFetchingDuplicate } = useGetActivityByIdQuery(
-    duplicateId, 
-    { skip: !duplicateId }
+
+  // Fetch Data (Duplicate ya Edit dono ke liye same query use hogi)
+  const { data: activityData, isLoading: isFetching } = useGetActivityByIdQuery(
+    editId || duplicateId, 
+    { skip: !editId && !duplicateId }
   );
-console.log("activitid",duplicateActivityData)
+
   const [formData, setFormData] = useState({
     name: '',
     language: '',     
-  isDuplicate: false,
+    isDuplicate: false,
     categoryId: '',
     placeId: '',
     timeSlots: [],
@@ -283,21 +557,20 @@ console.log("activitid",duplicateActivityData)
     InfoAndLogistics: { pickupZone: { description: '', note: '', mapLink: '' }, keyInfo: [], essentialGuide: [] },
     BBQ_BUFFET: { title: '', description: '', fields: [] },
     PrivateSUV: { available: false, fee: 0, model: 'SUV' },
-    images: [], // Will hold Files OR existing image objects
-    video: null, // Will hold File OR existing video object
-    packages: [], // Added to hold variants
+    images: [], 
+    video: null, 
+    packages: [], 
     originalActivityId: null,
     addons: [],
     isActive: true,
   });
 
-  // AUTO-FILL LOGIC FOR DUPLICATION
+  // AUTO-FILL LOGIC (Handles both Edit and Duplicate)
   useEffect(() => {
-    if (duplicateActivityData?.data) {
-      const act = duplicateActivityData.data;
-      console.log("dddd", duplicateActivityData);
+    if (activityData?.data) {
+      const act = activityData.data;
 
-      // Map existing images to be preserved
+      // 1. Map Media
       const mappedImages = act.Images ? act.Images.map(img => ({
         preview: img.secure_url,
         secure_url: img.secure_url,
@@ -305,7 +578,6 @@ console.log("activitid",duplicateActivityData)
         isExisting: true
       })) : [];
 
-      // Map existing video
       const mappedVideo = act.Video?.secure_url ? {
         preview: act.Video.secure_url,
         secure_url: act.Video.secure_url,
@@ -313,22 +585,28 @@ console.log("activitid",duplicateActivityData)
         isExisting: true
       } : null;
 
-      // Map packages (remove old DB IDs so backend creates new ones)
+      // 2. Map Packages 
+      // Important: Edit mode mein _id rakhni hai, Duplicate mein remove karni hai
       const mappedPackages = act.packages ? act.packages.map(pkg => {
-        const { _id, activityId, createdAt, updatedAt, __v, ...rest } = pkg;
-        const cleanedBookingFields = rest.bookingFields?.map(bf => {
-           const { _id, ...bfRest } = bf;
-           return bfRest;
-        }) || [];
-        return { ...rest, bookingFields: cleanedBookingFields };
+        if (isEditMode) {
+          return pkg; // Edit mein full object with IDs
+        } else {
+          // Duplicate mein IDs aur timestamps hata dete hain
+          const { _id, activityId, createdAt, updatedAt, __v, ...rest } = pkg;
+          const cleanedBookingFields = rest.bookingFields?.map(bf => {
+             const { _id, ...bfRest } = bf;
+             return bfRest;
+          }) || [];
+          return { ...rest, bookingFields: cleanedBookingFields };
+        }
       }) : [];
 
       setFormData(prevData => ({
         ...prevData,
-         originalActivityId: act._id,
-        // name: act.name ? `${act.name} (Copy)` : 'New Activity (Copy)',
-        name: act.name || 'New Activity',
-         language: act.languageId?._id || act.languageId || '',
+        originalActivityId: isEditMode ? null : act._id,
+        // Edit mode mein name change nahi hoga, duplicate mein (Copy) lagega
+        name: isEditMode ? (act.name || '') : (act.name ? `${act.name} (Copy)` : 'New Activity (Copy)'),
+        language: act.languageId?._id || act.languageId || '',
         categoryId: act.categoryId?._id || act.categoryId || '',
         placeId: act.placeId?._id || act.placeId || '',
         timeSlots: act.timeSlots || [],
@@ -354,10 +632,10 @@ console.log("activitid",duplicateActivityData)
         video: mappedVideo,
         packages: mappedPackages,
         addons: act.addons?.map(a => typeof a === 'object' ? a._id : a) || [],
-        isActive: true,
+        isActive: act.isActive ?? true,
       }));
     }
-  }, [duplicateActivityData]);
+  }, [activityData, isEditMode]);
 
   const steps = [
     { number: 1, label: 'Basic Info' }, { number: 2, label: 'Experience' },
@@ -370,7 +648,6 @@ console.log("activitid",duplicateActivityData)
   const handlePreviousStep = () => { if (currentStep > 1) { setCurrentStep(currentStep - 1); window.scrollTo(0, 0); } };
   const handleFormDataChange = (newData) => setFormData(prev => ({ ...prev, ...newData }));
 
-  // SUBMIT PAYLOAD HANDLER
   const handleSubmit = async () => {
     setError('');
     setSuccessMessage('');
@@ -378,48 +655,42 @@ console.log("activitid",duplicateActivityData)
     try {
       const formDataToSend = new FormData();
 
-      // Basic Text & Arrays
+      // Text Fields
       formDataToSend.append('name', formData.name);
-       formDataToSend.append('language', formData.language); 
-  formDataToSend.append('isDuplicate', formData.isDuplicate);
+      formDataToSend.append('language', formData.language); 
       formDataToSend.append('categoryId', formData.categoryId);
       formDataToSend.append('placeId', formData.placeId);
-  //      if (formData.originalActivityId) {
-  //   formDataToSend.append('activityId', formData.originalActivityId);
-  // }
-     if (formData.isDuplicate && formData.originalActivityId) {
-      // Backend controller 'sourceActivityId' expect kar raha hai
-      formDataToSend.append('sourceActivityId', formData.originalActivityId);
-    }
-      formDataToSend.append("timeSlots", JSON.stringify(formData.timeSlots));
       formDataToSend.append('isActive', formData.isActive);
 
-      // Objects
+      // Duplicate Specific
+      if (!isEditMode && duplicateId && formData.originalActivityId) {
+        formDataToSend.append('isDuplicate', 'true');
+        formDataToSend.append('sourceActivityId', formData.originalActivityId);
+      }
+
+      // JSON Fields
+      formDataToSend.append("timeSlots", JSON.stringify(formData.timeSlots));
       formDataToSend.append('Experience', JSON.stringify(formData.Experience));
       formDataToSend.append('Itinerary', JSON.stringify(formData.Itinerary));
       formDataToSend.append('InfoAndLogistics', JSON.stringify(formData.InfoAndLogistics));
       formDataToSend.append('BBQ_BUFFET', JSON.stringify(formData.BBQ_BUFFET));
       formDataToSend.append('PrivateSUV', JSON.stringify(formData.PrivateSUV));
-      
-      // Send Packages
       formDataToSend.append('packages', JSON.stringify(formData.packages || []));
-  formDataToSend.append('addons', JSON.stringify(formData.addons || []));
-      // Handling Images (Separating new files vs existing duplicated URLs)
+      formDataToSend.append('addons', JSON.stringify(formData.addons || []));
+
+      // Media Upload Logic
       const existingImages = [];
       if (formData.images?.length) {
         formData.images.forEach((image) => {
           if (image instanceof File) {
-            formDataToSend.append('images', image); // New upload
+            formDataToSend.append('images', image);
           } else if (image.isExisting) {
             existingImages.push({ secure_url: image.secure_url, public_id: image.public_id });
           }
         });
       }
-      if (existingImages.length > 0) {
-        formDataToSend.append('existingImages', JSON.stringify(existingImages));
-      }
+      formDataToSend.append('existingImages', JSON.stringify(existingImages));
 
-      // Handling Video (Separating new file vs existing duplicated URL)
       if (formData.video instanceof File) {
         formDataToSend.append('video', formData.video);
       } else if (formData.video?.isExisting) {
@@ -428,18 +699,27 @@ console.log("activitid",duplicateActivityData)
           public_id: formData.video.public_id 
         }));
       }
-console.log("lang",formDataToSend)
-      await createActivity(formDataToSend).unwrap();
-      setSuccessMessage(duplicateId ? 'Activity duplicated successfully!' : 'Activity created successfully!');
 
-      // setTimeout(() => { window.location.reload(); }, 2000);
+      // Action Selection: Update or Create
+      if (isEditMode) {
+        await updateActivity({ id: editId, data: formDataToSend }).unwrap();
+        toast.success('Activity updated successfully!');
+      } else {
+        await createActivity(formDataToSend).unwrap();
+        toast.success(duplicateId ? 'Activity duplicated successfully!' : 'Activity created successfully!');
+      }
+
       setTimeout(() => {
-  router.push('/admin/activities');
-}, 2000);
+        router.push('/admin/activities');
+      }, 2000);
+
     } catch (err) {
-      setError(err?.data?.message || err.message || 'Failed to create activity');
+      setError(err?.data?.message || err.message || 'Operation failed');
+      toast.error(err?.data?.message || 'Something went wrong');
     }
   };
+
+  const isLoadingAction = isCreating || isUpdating;
 
   const renderStep = () => {
     const commonProps = { formData, onFormDataChange: handleFormDataChange, onNext: handleNextStep, onPrevious: handlePreviousStep };
@@ -451,25 +731,27 @@ console.log("lang",formDataToSend)
       case 5: return <Step5BBQBuffet {...commonProps} />;
       case 6: return <Step6PrivateSUV {...commonProps} />;
       case 7: return <Step7MediaUpload {...commonProps} />;
-      case 8: return <Step8ReviewSubmit {...commonProps} onSubmit={handleSubmit} isLoading={isLoading} />;
+      case 8: return <Step8ReviewSubmit {...commonProps} onSubmit={handleSubmit} isLoading={isLoadingAction} />;
       default: return null;
     }
   };
 
-  if (duplicateId && isFetchingDuplicate) return <div className="min-h-screen flex items-center justify-center"><p>Loading Duplicate Data...</p></div>;
+  if ((duplicateId || editId) && isFetching) {
+    return <div className="min-h-screen flex items-center justify-center"><p className="animate-pulse">Loading data...</p></div>;
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-100 to-slate-200 py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8 mb-8 border-l-4 border-blue-500">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {duplicateId ? "Duplicate Activity" : "Create New Activity"}
+            {isEditMode ? "Edit Activity" : duplicateId ? "Duplicate Activity" : "Create New Activity"}
           </h1>
-          <p className="text-gray-600">Fill in all details to create a comprehensive activity package</p>
+          <p className="text-gray-600">Fill in all details to manage your activity and its packages.</p>
         </div>
 
-        {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">{error}</div>}
-        {successMessage && <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg">{successMessage}</div>}
+        {error && <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">{error}</div>}
+        {successMessage && <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-lg border border-green-200">{successMessage}</div>}
 
         <StepIndicator currentStep={currentStep} steps={steps} />
 
@@ -479,12 +761,20 @@ console.log("lang",formDataToSend)
 
         <div className="flex gap-4 justify-between">
           {currentStep > 1 && (
-            <button onClick={handlePreviousStep} disabled={isLoading} className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300">
+            <button 
+              onClick={handlePreviousStep} 
+              disabled={isLoadingAction} 
+              className="px-6 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition"
+            >
               ← Previous Step
             </button>
           )}
           {currentStep < steps.length && (
-            <button onClick={handleNextStep} disabled={isLoading} className="ml-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
+            <button 
+              onClick={handleNextStep} 
+              disabled={isLoadingAction} 
+              className="ml-auto px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md"
+            >
               Next Step →
             </button>
           )}

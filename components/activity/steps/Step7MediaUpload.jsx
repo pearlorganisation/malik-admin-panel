@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 
 export default function Step7MediaUpload({ formData, onFormDataChange, onNext, onPrevious }) {
   const [imagePreviews, setImagePreviews] = useState([]);
-
+const MAX_IMAGES = 10;
+const MAX_IMAGE_SIZE_MB = 5;
+const MAX_VIDEO_SIZE_MB = 20;
   // Generate previews (handles both File & existing images)
   useEffect(() => {
     if (!formData.images) return;
@@ -32,20 +34,77 @@ export default function Step7MediaUpload({ formData, onFormDataChange, onNext, o
   }, [formData.images]);
 
   // Handle Image Upload
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files || []);
-    const newImages = [...(formData.images || []), ...files];
-    onFormDataChange({ images: newImages });
-  };
+  // const handleImageChange = (e) => {
+  //   const files = Array.from(e.target.files || []);
+  //   const newImages = [...(formData.images || []), ...files];
+  //   onFormDataChange({ images: newImages });
+  // };
+const handleImageChange = (e) => {
+  const files = Array.from(e.target.files || []);
 
-  // Handle Video Upload
-  const handleVideoChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onFormDataChange({ video: file });
+  const currentCount = formData.images?.length || 0;
+
+  // LIMIT CHECK (count)
+  if (currentCount + files.length > MAX_IMAGES) {
+    alert(`Maximum ${MAX_IMAGES} images allowed`);
+    return;
+  }
+
+  // SIZE CHECK
+  const validFiles = files.filter((file) => {
+    const sizeMB = file.size / 1024 / 1024;
+
+    if (sizeMB > MAX_IMAGE_SIZE_MB) {
+      alert(`${file.name} is too large (Max ${MAX_IMAGE_SIZE_MB}MB)`);
+      return false;
     }
-  };
+    return true;
+  });
 
+  const newImages = [...(formData.images || []), ...validFiles];
+  onFormDataChange({ images: newImages });
+};
+  // Handle Video Upload
+  // const handleVideoChange = (e) => {
+  //   const file = e.target.files?.[0];
+  //   if (file) {
+  //     onFormDataChange({ video: file });
+  //   }
+  // };
+const handleVideoChange = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const sizeMB = file.size / 1024 / 1024;
+
+  if (sizeMB > MAX_VIDEO_SIZE_MB) {
+    alert(`Video too large. Max ${MAX_VIDEO_SIZE_MB}MB allowed`);
+    return;
+  }
+
+  onFormDataChange({ video: file });
+};
+
+const validateMedia = () => {
+  const imageCount = formData.images?.length || 0;
+
+  if (imageCount === 0) {
+    alert("At least 1 image required");
+    return false;
+  }
+
+  if (imageCount > MAX_IMAGES) {
+    alert("Too many images selected");
+    return false;
+  }
+
+  return true;
+};
+
+const handleNextClick = () => {
+  if (!validateMedia()) return;
+  onNext();
+};
   // Remove Image
   const removeImage = (index) => {
     const newImages = formData.images.filter((_, i) => i !== index);
@@ -129,7 +188,9 @@ export default function Step7MediaUpload({ formData, onFormDataChange, onNext, o
         <button onClick={onPrevious} className="px-6 py-3 bg-gray-200 rounded-lg">
           Back
         </button>
-        <button onClick={onNext} className="px-6 py-3 bg-blue-600 text-white rounded-lg">
+        {/* <button onClick={onNext} className="px-6 py-3 bg-blue-600 text-white rounded-lg"> */}
+        <button onClick={handleNextClick} className="px-6 py-3 bg-blue-600 text-white rounded-lg">
+
           Continue
         </button>
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useUpdateActivityMutation } from '@/features/activity/activityApi';
+import { useGetLanguagesQuery } from '@/features/languages/languageApi';
 import React, { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 
@@ -183,12 +184,16 @@ const isValidTime = (time) => /^(0?[1-9]|1[0-2]):[0-5][0-9]\s?(AM|PM)$/i.test(ti
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function EditActivityModal({ activity, onClose, onSuccess }) {
   const [updateActivity, { isLoading }] = useUpdateActivityMutation();
+  const { data: langsData } = useGetLanguagesQuery(); 
+  const languages = langsData?.data || [];
   const [activeTab, setActiveTab] = useState('basic');
   const [errors, setErrors] = useState({});
-
+console.log("updateact",activity)
   const [formData, setFormData] = useState({
     name: '',
     isActive: true,
+    languageId: '', 
+    isDuplicate: false,
     timeSlots: '',
     experienceTitle: '',
     experienceNote: '',
@@ -213,6 +218,8 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
       setFormData({
         name: activity?.name || '',
         isActive: activity?.isActive ?? true,
+        languageId: activity?.languageId?._id || activity?.languageId || '', 
+        isDuplicate: activity?.isDuplicate || false,
         timeSlots: (activity?.timeSlots || []).join(', '),
         experienceTitle: activity?.Experience?.title || '',
         experienceNote: activity?.Experience?.note || '',
@@ -317,6 +324,8 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
       const payload = {
         name: formData.name.trim(),
         isActive: formData.isActive,
+         languageId: formData.languageId, 
+        isDuplicate: formData.isDuplicate,
         timeSlots: timeSlotsArray,
         Experience: {
           title: formData.experienceTitle,
@@ -419,6 +428,7 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
               </div>
 
               <SectionCard icon="📌" title="Activity Identity" subtitle="Name and visibility status" accent="amber">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextInput
                   label="Activity Name"
                   required
@@ -429,6 +439,25 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
                   tip="The main title that customers will see. Keep it short and descriptive."
                   error={errors.name}
                 />
+
+ <div className="flex flex-col">
+          <FieldLabel label="Select Language" required tip="Choose the language for this activity version." />
+          <select
+            name="languageId"
+            value={formData.languageId}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:ring-2 focus:ring-amber-400 focus:outline-none shadow-sm"
+          >
+            <option value="">Select Language</option>
+            {languages.map((lang) => (
+              <option key={lang._id} value={lang._id}>
+                {lang.name} ({lang.code.toUpperCase()})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-lg">
                   <div className="relative flex-shrink-0">
                     <input
@@ -453,6 +482,29 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
                     <p className="text-xs text-gray-400 mt-0.5">Toggle to show or hide this activity from customers</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-3 p-3.5 bg-white border border-gray-200 rounded-lg">
+          <div className="relative flex-shrink-0">
+            <input
+              type="checkbox"
+              name="isDuplicate"
+              id="isDuplicate"
+              checked={formData.isDuplicate}
+              onChange={handleChange}
+              className="sr-only"
+            />
+            <label
+              htmlFor="isDuplicate"
+              className={`flex items-center cursor-pointer w-11 h-6 rounded-full transition-colors duration-200 ${formData.isDuplicate ? 'bg-blue-500' : 'bg-gray-300'}`}
+            >
+              <span className={`inline-block w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 mx-1 ${formData.isDuplicate ? 'translate-x-5' : 'translate-x-0'}`} />
+            </label>
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-gray-800">Is Duplicate?</p>
+            <p className="text-xs text-gray-400 mt-0.5">Check if this is a translated copy</p>
+          </div>
+        </div>
+      </div>
               </SectionCard>
 
               <SectionCard icon="🕐" title="Time Slots" subtitle="When is this activity available?" accent="blue">

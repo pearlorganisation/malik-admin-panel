@@ -27,8 +27,9 @@ export default function ViewActivityModal({
   activity,
   onClose,
   onPackageAdded,
+  initialTab = 'overview',
 }) {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [showAddPackage, setShowAddPackage] = useState(false);
 
   const [selectedPackage, setSelectedPackage] = useState(null);
