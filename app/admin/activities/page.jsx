@@ -26,7 +26,7 @@ export default function ActivitiesPage() {
 
   // Extract Data & Pagination Info
   const activities = response?.data?.data || [];
-  console.log("FULL RESPONSE:", response);
+  // console.log("FULL RESPONSE:", response);
 
   const pagination = response?.data?.pagination || { total: 0, page: 1, totalPages: 1 };
   

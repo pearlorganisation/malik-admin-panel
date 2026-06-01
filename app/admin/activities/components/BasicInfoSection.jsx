@@ -4,7 +4,7 @@ export default function BasicInfoSection({
   setFormData,
   categories,
 }) {
-  console.log("Categories in BasicInfoSection:", categories);
+  // console.log("Categories in BasicInfoSection:", categories);
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">

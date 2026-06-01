@@ -269,7 +269,7 @@ import { Globe, Search, ChevronDown, Check, Info,X} from "lucide-react";
 import { useGetUniqueActivityNamesQuery } from '@/features/activity/activityApi';
 import { useSearchParams } from 'next/navigation';
 export default function Step1BasicInfo({ formData, onFormDataChange, onNext }) {
-  console.log("formdata",formData)
+  // console.log("formdata",formData)
   const [errors, setErrors] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addonSearch, setAddonSearch] = useState("");
@@ -280,7 +280,7 @@ export default function Step1BasicInfo({ formData, onFormDataChange, onNext }) {
 const hasInitialized = React.useRef(false);
   // --- EXISTING API CALLS ---
   const { data, isLoading } = useGetUniqueActivityNamesQuery();
-  console.log("daaa",data)
+  // console.log("daaa",data)
   const activityNames = data?.data || [];
   const filteredNames = formData.isDuplicate
   ? activityNames 

@@ -188,7 +188,7 @@ export default function EditActivityModal({ activity, onClose, onSuccess }) {
   const languages = langsData?.data || [];
   const [activeTab, setActiveTab] = useState('basic');
   const [errors, setErrors] = useState({});
-console.log("updateact",activity)
+// console.log("updateact",activity)
   const [formData, setFormData] = useState({
     name: '',
     isActive: true,

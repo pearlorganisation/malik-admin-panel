@@ -39,7 +39,7 @@ const TABS = [
 
 export default function ManagePlaces() {
   const { data: placesData, isLoading: loadingPlaces, refetch } = useGetAllPlacesQuery();
-  console.log("data",placesData);
+  // console.log("data",placesData);
   const [createPlace, { isLoading: creating }] = useCreatePlaceMutation();
   const [updatePlace, { isLoading: updating }] = useUpdatePlaceMutation();
   const [deletePlace] = useDeletePlaceMutation();

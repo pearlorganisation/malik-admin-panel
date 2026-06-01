@@ -43,7 +43,7 @@ const [showViewPackage, setShowViewPackage] = useState(false);
   // useGetPackagesByActivityQuery(activity._id, {
   //   skip: activeTab !== "packages",
   // });
-  console.log("act", activity);
+  // console.log("act", activity);
 
 const activityIdToUse = activity?.sourceActivityId || activity?._id;
 
@@ -54,7 +54,7 @@ const { data: packagesData, isLoading } =
 const [deletePackage, { isLoading: isDeleting }] = useDeletePackageMutation();
 const packages = packagesData?.data || [];
 
-console.log("pak",packages)
+// console.log("pak",packages)
   const formatDate = (date) => {
     if (!date) return '—';
     try {

@@ -80,22 +80,44 @@ export default function ManageSpots() {
       }
     });
   };
-  const handleNestedChange = (field, index, subfield) => (e) => {
-    const value = e.target.value;
-    setForm((prev) => {
-      const updated = [...prev[field]];
-      updated[index][subfield] = value;
-      return { ...prev, [field]: updated };
-    });
-  };
+  // const handleNestedChange = (field, index, subfield) => (e) => {
+  //   const value = e.target.value;
+  //   setForm((prev) => {
+  //     const updated = [...prev[field]];
+  //     updated[index][subfield] = value;
+  //     return { ...prev, [field]: updated };
+  //   });
+  // };
 
-  const handleVisitorInfoChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      visitorInfo: { ...prev.visitorInfo, [name]: value },
-    }));
-  };
+
+  const handleNestedChange = (field, index, subfield) => (e) => {
+  const value = e.target.value;
+  setForm((prev) => {
+    // 1. Clone the array
+    const updatedArray = [...prev[field]];
+    
+    // 2. Clone the specific OBJECT at that index before modifying it
+    updatedArray[index] = { 
+      ...updatedArray[index], 
+      [subfield]: value 
+    };
+
+    return { 
+      ...prev, 
+      [field]: updatedArray 
+    };
+  });
+};
+const handleVisitorInfoChange = (e) => {
+  const { name, value } = e.target;
+  setForm((prev) => ({
+    ...prev,
+    visitorInfo: { 
+      ...prev.visitorInfo, // Clone the existing visitorInfo object
+      [name]: value        // Update the specific field
+    },
+  }));
+};
 
   const addItem = (field) => {
     setForm((prev) => ({
@@ -124,16 +146,25 @@ export default function ManageSpots() {
     formData.append("location", form.location);
     formData.append("overview", form.overview);
 
-    if (form.image) {
-      formData.append("image", form.image);
-    }
+    // if (form.image) {
+    //   formData.append("image", form.image);
+    // }
 
-    formData.append("thingsToDo", JSON.stringify(form.thingsToDo.filter((item) => item.title && item.description)));
-    formData.append("howToGetThere", JSON.stringify(form.howToGetThere.filter((item) => item.mode && item.description)));
-    formData.append("visitorInfo", JSON.stringify(form.visitorInfo));
-      // 4. Send Where to Stay (Hotel IDs) to backend
-    formData.append("whereToStay", JSON.stringify(form.whereToStay));
+     if (form.image instanceof File) {
+    formData.append("image", form.image);
+  }
 
+ const cleanThings = form.thingsToDo.filter((item) => item.title.trim() !== "");
+  const cleanHow = form.howToGetThere.filter((item) => item.mode.trim() !== "");
+    // formData.append("thingsToDo", JSON.stringify(form.thingsToDo.filter((item) => item.title && item.description)));
+    // formData.append("howToGetThere", JSON.stringify(form.howToGetThere.filter((item) => item.mode && item.description)));
+    // formData.append("visitorInfo", JSON.stringify(form.visitorInfo));
+    //   // 4. Send Where to Stay (Hotel IDs) to backend
+    // formData.append("whereToStay", JSON.stringify(form.whereToStay));
+formData.append("thingsToDo", JSON.stringify(cleanThings));
+  formData.append("howToGetThere", JSON.stringify(cleanHow));
+  formData.append("visitorInfo", JSON.stringify(form.visitorInfo));
+  formData.append("whereToStay", JSON.stringify(form.whereToStay));
     try {
       if (editingSpot) {
         await updateSpot({ id: editingSpot._id, formData }).unwrap();
